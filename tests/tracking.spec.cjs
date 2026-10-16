@@ -76,6 +76,7 @@ test('users, projects, recoverable timers, notes, entry controls, totals, and ca
     database.close();
     await launch();
     await expect(page.locator('#timer-display')).toHaveText(/^01:02:\d{2}$/);
+    await expect(page.locator('#project-total')).toHaveText(/^01:02:\d{2}$/);
     await expect(page.locator('#timer-notes')).toHaveValue('Initial planning');
     await expect(page.locator('#running-banner')).toContainText('Alice / Client website');
     snapshot = await state();
@@ -104,7 +105,7 @@ test('users, projects, recoverable timers, notes, entry controls, totals, and ca
     await page.getByRole('button', { name: 'Remove clock-out', exact: true }).click();
     await confirm('Remove clock-out');
     await expect(page.getByRole('button', { name: 'Stop timer', exact: true })).toBeVisible();
-    await expect(page.locator('#project-total')).toHaveText('00:00:00');
+    await expect(page.locator('#project-total')).toHaveText(/^01:02:\d{2}$/);
     snapshot = await state();
     expect(snapshot.entries[0].id).toBe(session.id);
     expect(snapshot.entries[0].clock_in).toBe(startTime);

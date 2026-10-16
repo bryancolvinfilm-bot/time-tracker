@@ -1,5 +1,28 @@
 # Time Tracker milestones
 
+## 2026-10-16: version 0.3.0 live totals and current week
+
+### Implemented
+
+- Project totals now include elapsed running sessions and refresh every second, both in the tracking summary and the Projects list.
+- The right-hand summary emphasizes the selected project's **This week** total and shows the all-time project total below in smaller text.
+- Weeks run from Sunday 00:00 through the next Sunday 00:00 in the computer's local timezone, including all of Saturday. The summary displays the week's date range.
+- Weekly totals include only the portion of each session within that week, including running sessions that began before Sunday. Week rollover, year boundaries, and daylight-saving changes use local calendar boundaries.
+- Confirmed that clock-in and clock-out already store timestamps and display full dates and times including seconds. Added ISO datetime attributes to the displayed timestamps.
+- Updated the remove-clock-out confirmation to reflect that reopened time continues to count in live totals.
+- Database location, app identity, session records, and schema version 2 remain unchanged. Existing data and running sessions continue to work across the update.
+
+### Validation completed
+
+- Syntax checks passed.
+- All 8 database tests, 6 time-calculation tests, and 3 source Electron integration tests passed.
+- All 3 Electron integration tests passed against the packaged Windows build.
+- Verified live increments, project/user isolation, week-boundary clipping, Sunday rollover, year boundaries, and both Los Angeles daylight-saving transitions.
+- Inspected updated light/dark and narrow-window screenshots. The weekly total is larger than the all-time project total.
+- Built `release/Time Tracker 0.3.0.exe` and `release/Time Tracker Setup 0.3.0.exe`; both report product version 0.3.0.
+
+The GitHub multi-platform build workflow was not triggered for this milestone. macOS and Linux builds remain unverified here.
+
 ## 2026-10-16: Git setup and private GitHub backup
 
 - Installed Git for Windows 2.55.0.windows.5 through Windows Package Manager, with Git Credential Manager 2.9.1.

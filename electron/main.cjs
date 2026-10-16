@@ -52,6 +52,7 @@ if (hasLock) app.whenReady().then(() => {
     ['/index.html', ['index.html', 'text/html']],
     ['/styles.css', ['styles.css', 'text/css']],
     ['/app.js', ['app.js', 'text/javascript']],
+    ['/time-utils.js', ['time-utils.js', 'text/javascript']],
     ['/assets/icon.svg', ['assets/icon.svg', 'image/svg+xml']],
   ]);
   protocol.handle('app', async (request) => {

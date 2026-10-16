@@ -2,7 +2,7 @@
 
 A self-contained Electron desktop app with a local SQLite database. No server, account, network connection, or separately installed database is needed to run the packaged app.
 
-Version 0.2.0 supports local users, their projects, and persistent clock-in / clock-out sessions. Light and dark themes are included.
+Version 0.3.0 supports local users, their projects, persistent clock-in / clock-out sessions, and live project and weekly totals. Light and dark themes are included.
 
 Project instructions for future agents are in [AGENTS.md](AGENTS.md). Verified progress and the agreement to preserve the same database across versions are recorded in [MILESTONES.md](MILESTONES.md).
 
@@ -11,9 +11,11 @@ Project instructions for future agents are in [AGENTS.md](AGENTS.md). Verified p
 1. Open **Users**, enter a name, and choose **Add user**.
 2. Choose **View projects** for that user. Enter a project name and choose **Add project**.
 3. Choose **Track time**, optionally enter session notes, and choose **Start timer**.
-4. Choose **Stop timer** when finished. The project's completed total updates immediately.
+4. Choose **Stop timer** when finished to save the clock-out timestamp. Project and weekly totals include the session while it runs and retain its duration after stopping.
 
-The Track time page also lets you switch users and projects. The Projects page lists projects for the selected user, with completed totals and controls to rename or delete them.
+The Track time page also lets you switch users and projects. Its right-hand summary emphasizes **This week**, with the all-time **Project total** below in smaller text. The Projects page lists projects for the selected user, with live totals and controls to rename or delete them.
+
+Both totals include running sessions and update every second. This week means Sunday at midnight through the following Sunday at midnight, including all of Saturday, in the computer's local timezone. Sessions crossing a week boundary contribute only the time inside that week. Calendar boundaries account for daylight-saving changes. The displayed date range identifies the current Sunday–Saturday week. Each saved clock-in and clock-out displays its date and time, including seconds.
 
 Only one timer can run across the app. A running session is saved immediately with a random 64-character hexadecimal session code, its project, its start timestamp, and its notes. Closing or quitting the app does not clock out. Reopening finds the session without a clock-out time and displays elapsed time from its original start, including time spent with the app closed or the computer asleep. No background app process is needed for this behavior.
 
@@ -27,7 +29,7 @@ Notes are optional and limited to 255 characters. Initial notes save with Start.
 - Deleting a project deletes all of its sessions, including an active one.
 - Deleting a user deletes all of their projects and sessions, including an active one.
 
-Destructive actions show a confirmation describing what will be removed. Deletions cannot be undone. Completed project totals sum `clock_out - clock_in` for stopped entries; the running duration appears separately. Durations display as hours, minutes, and seconds, with hours allowed to exceed 24.
+Destructive actions show a confirmation describing what will be removed. Deletions cannot be undone. Project totals sum `clock_out - clock_in` for stopped entries plus elapsed time for the running entry. Weekly totals clip those same intervals to the current week. Durations display as hours, minutes, and seconds, with hours allowed to exceed 24.
 
 ## Development
 
@@ -79,6 +81,7 @@ Git tracks source code, tests, icons, configuration, and project documentation. 
 - `electron/preload.cjs`: narrow API between the sandboxed UI and the main process. The renderer has no direct Node or SQL access.
 - `electron/storage.cjs`: SQLite schema, validation, transactional mutations, saved selections, and completed totals using Node's bundled `node:sqlite`.
 - `src/`: bundled interface, styles, scripts, and icons. No remote fonts or assets.
+- `src/time-utils.js`: shared, tested calculations for live project totals and local Sunday–Saturday weeks. These summaries are computed from existing timestamps; version 0.3.0 needs no database migration.
 
 The database has four shared relational tables: `users`, `projects`, `time_entries`, and `settings`. Projects reference a user; time entries reference a project. Foreign keys use `ON DELETE CASCADE`. A unique partial index enforces one entry with a null clock-out across the database, and a SQLite CHECK constraint enforces the 255-character notes limit. Each Start generates a new code using cryptographically random bytes. Timestamps are stored as Unix milliseconds and displayed in the computer's local timezone. Version 0.1 appearance preferences are preserved when the new tables are added.
 
@@ -91,9 +94,9 @@ npm run check
 npm test
 ```
 
-Run suites individually with `npm run test:storage` and `npm run test:desktop`.
+Run suites individually with `npm run test:storage`, `npm run test:time`, and `npm run test:desktop`.
 
-Database tests cover migration, ownership, session codes, exact totals, validation, persistence without an explicit close, cascading deletes, and the single-timer constraint across connections. Electron integration tests exercise the real interface and SQLite database, application reopening with a running timer, notes, renaming, deleting entries, removing clock-out, project/user deletion, navigation, renderer isolation, narrow-window overflow, and theme persistence. All test data is isolated in temporary directories.
+Database tests cover migration, ownership, session codes, exact totals, validation, persistence without an explicit close, cascading deletes, and the single-timer constraint across connections. Time-calculation tests cover running sessions, week boundaries, Sunday rollover, year boundaries, and spring/fall daylight-saving changes. Electron integration tests exercise the real interface and SQLite database, live weekly summaries, dated clock stamps, application reopening with a running timer, notes, renaming, deleting entries, removing clock-out, project/user deletion, navigation, renderer isolation, narrow-window overflow, and theme persistence. All test data is isolated in temporary directories.
 
 To verify the built Windows application in PowerShell:
 
@@ -114,7 +117,7 @@ npm run dist:mac    # macOS DMG and ZIP
 npm run dist:linux  # Linux AppImage and DEB
 ```
 
-Artifacts are written to `release/`. Users do not need Node.js or npm installed. Windows version 0.2.0 files are `Time Tracker Setup 0.2.0.exe` (installer) and `Time Tracker 0.2.0.exe` (portable launcher).
+Artifacts are written to `release/`. Users do not need Node.js or npm installed. Windows version 0.3.0 files are `Time Tracker Setup 0.3.0.exe` (installer) and `Time Tracker 0.3.0.exe` (portable launcher).
 
 One source codebase produces separate applications for each operating system. Build on the target OS for predictable results. The workflow in `.github/workflows/build.yml` uses Windows, macOS, and Linux runners, tests the app, and uploads builds. Run it manually after pushing this project to GitHub, or push a `v*` tag. The workflow builds the architecture of its runner; it does not yet produce every CPU architecture.
 

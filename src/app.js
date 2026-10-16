@@ -1,4 +1,5 @@
 ﻿const api = window.timeTracker;
+const { projectTotals } = window.timeTrackerTime;
 const $ = (selector) => document.querySelector(selector);
 const pageNames = { today: 'Track time', users: 'Users', projects: 'Projects', settings: 'Settings' };
 let theme = 'light';
@@ -163,9 +164,7 @@ function render() {
   $('#notes-status').textContent = '';
   $('#summary-name').textContent = project?.name ?? 'A place for your work';
   $('#summary-user').textContent = user?.name ?? 'Choose a user and project.';
-  $('#project-total').textContent = duration(project?.total_ms ?? 0);
   $('#entry-count').textContent = project?.entry_count ?? 0;
-  $('#project-live-row').hidden = !trackingSelected;
   $('#running-banner').hidden = !active;
   if (active) {
     const activeProject = workspace.projects.find((item) => item.id === active.project_id);
@@ -202,7 +201,9 @@ function renderProjects() {
   projects.forEach((project) => {
     const row = element('article', 'manager-row');
     const details = element('div', 'row-details');
-    details.append(element('h2', '', project.name), element('p', 'tabular', `${duration(project.total_ms)} completed · ${project.entry_count} time entries`));
+    const total = element('p', 'tabular');
+    total.dataset.projectTotal = project.id;
+    details.append(element('h2', '', project.name), total);
     if (activeEntry()?.project_id === project.id) details.append(element('span', 'running-tag', 'Timer running'));
     const actions = element('div', 'row-actions');
     actions.append(actionButton('Track time', 'project:select', project.id), actionButton('Rename', 'project:rename', project.id), actionButton('Delete', 'project:delete', project.id, 'button danger-quiet'));
@@ -221,8 +222,10 @@ function renderEntries() {
     const fields = element('div', 'entry-fields');
     const clockIn = element('div');
     clockIn.append(element('span', 'field-caption', 'Clock in'), element('time', '', dateTime(entry.clock_in)));
+    clockIn.querySelector('time').dateTime = new Date(entry.clock_in).toISOString();
     const clockOut = element('div');
     clockOut.append(element('span', 'field-caption', 'Clock out'), element('time', entry.clock_out === null ? 'running-tag' : '', entry.clock_out === null ? 'Still running' : dateTime(entry.clock_out)));
+    if (entry.clock_out !== null) clockOut.querySelector('time').dateTime = new Date(entry.clock_out).toISOString();
     const elapsed = element('div');
     const elapsedValue = element('strong', 'entry-duration tabular', duration((entry.clock_out ?? Date.now()) - entry.clock_in));
     if (entry.clock_out === null) elapsedValue.dataset.liveStart = entry.clock_in;
@@ -248,12 +251,22 @@ function renderEntries() {
   });
 }
 function tick() {
+  const now = Date.now();
   const active = activeEntry();
-  const elapsed = active ? duration(Date.now() - active.clock_in) : '00:00:00';
+  const elapsed = active ? duration(now - active.clock_in) : '00:00:00';
   $('#running-elapsed').textContent = elapsed;
-  $('#project-live').textContent = elapsed;
   $('#timer-display').textContent = active?.project_id === selectedProjectId ? elapsed : '00:00:00';
-  document.querySelectorAll('[data-live-start]').forEach((node) => { node.textContent = duration(Date.now() - Number(node.dataset.liveStart)); });
+  const totals = projectTotals(workspace.entries, selectedProjectId, now);
+  $('#project-total').textContent = duration(totals.totalMs);
+  $('#project-week-total').textContent = duration(totals.weekMs);
+  const weekDateFormat = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  $('#project-week-range').textContent = weekDateFormat.formatRange(new Date(totals.week.start), new Date(totals.week.end - 1));
+  document.querySelectorAll('[data-project-total]').forEach((node) => {
+    const project = workspace.projects.find((item) => item.id === node.dataset.projectTotal);
+    const total = projectTotals(workspace.entries, project.id, now);
+    node.textContent = `${duration(total.totalMs)} total · ${project.entry_count} time entries`;
+  });
+  document.querySelectorAll('[data-live-start]').forEach((node) => { node.textContent = duration(now - Number(node.dataset.liveStart)); });
   $('#today-date').textContent = new Intl.DateTimeFormat(undefined, { weekday: 'long', month: 'long', day: 'numeric' }).format(new Date()).toUpperCase();
 }
 setInterval(tick, 1000);
@@ -366,7 +379,7 @@ document.addEventListener('click', attempt(async (event) => {
     showDialog({ title: 'Delete time entry?', description: entry.clock_out === null ? 'This permanently deletes the running session and its clock-in time. The timer will disappear.' : 'This permanently deletes the clock-in and clock-out pair, its duration, and its notes. The project total will update.', confirm: 'Delete entry', danger: true, action: () => run(op, { id }) });
   } else if (op === 'entry:reopen') {
     const entry = workspace.entries.find((item) => item.id === id);
-    showDialog({ title: 'Remove clock-out?', description: `This session will run again from ${dateTime(entry.clock_in)}, including all time since then. Its completed duration leaves the total until you stop it again. It may overlap other saved entries.`, confirm: 'Remove clock-out', action: () => run(op, { id }) });
+    showDialog({ title: 'Remove clock-out?', description: `This session will run again from ${dateTime(entry.clock_in)}, including all time since then. Project and weekly totals will include that running time. It may overlap other saved entries.`, confirm: 'Remove clock-out', action: () => run(op, { id }) });
   }
 }, false));
 

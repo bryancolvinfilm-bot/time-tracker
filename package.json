@@ -1,7 +1,7 @@
 {
   "name": "time-tracker",
   "productName": "Time Tracker",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "A quiet, local-first home for your time.",
   "private": true,
   "author": "Time Tracker",
@@ -10,9 +10,10 @@
   "scripts": {
     "start": "electron .",
     "dev": "electron .",
-    "check": "node --check electron/main.cjs && node --check electron/preload.cjs && node --check electron/storage.cjs && node --check src/app.js",
-    "test": "npm run test:storage && npm run test:desktop",
+    "check": "node --check electron/main.cjs && node --check electron/preload.cjs && node --check electron/storage.cjs && node --check src/time-utils.js && node --check src/app.js",
+    "test": "npm run test:storage && npm run test:time && npm run test:desktop",
     "test:storage": "node --test tests/storage.test.cjs",
+    "test:time": "node --test tests/time.test.cjs",
     "test:desktop": "playwright test",
     "pack": "electron-builder --dir",
     "dist": "electron-builder",

@@ -1,10 +1,11 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Time Tracker</title>
   <link rel="stylesheet" href="styles.css" />
+  <script src="time-utils.js" defer></script>
   <script src="app.js" defer></script>
 </head>
 <body>
@@ -57,8 +58,8 @@
           </article>
           <aside class="project-summary activity-card">
             <p class="eyebrow">SELECTED PROJECT</p><h2 id="summary-name">A place for your work</h2><p id="summary-user" class="summary-user">Choose a user and project.</p>
-            <div class="summary-total"><span>Completed time</span><strong id="project-total">00:00:00</strong><small>Sum of saved clock-in / clock-out pairs</small></div>
-            <div id="project-live-row" class="summary-live" hidden><span>Running session</span><strong id="project-live">00:00:00</strong></div>
+            <div class="summary-week"><span class="eyebrow">THIS WEEK</span><strong id="project-week-total">00:00:00</strong><span id="project-week-range" class="week-range"></span><small>Sun–Sat · includes running time</small></div>
+            <div class="summary-total"><span>Project total</span><strong id="project-total">00:00:00</strong><small>All time · includes running time</small></div>
             <div class="summary-count"><span>Time entries</span><strong id="entry-count">0</strong></div>
             <button class="button secondary full-width" data-go="projects">Manage projects</button>
           </aside>
@@ -77,11 +78,11 @@
         <div class="manager-user"><label for="manager-user-select">Projects for<select id="manager-user-select" aria-label="Projects for user"><option value="">Choose a user</option></select></label><button class="text-button" data-go="users">Manage users</button></div>
         <form id="add-project-form" class="manager-form activity-card"><label for="project-name">Add a project<input id="project-name" name="name" maxlength="100" required placeholder="Project name" /></label><button id="add-project-button" class="button primary" type="submit" disabled>Add project</button></form>
         <div class="activity-card manager-list" id="projects-list"></div>
-        <p class="settings-footnote">Completed totals include saved pairs only. Deleting a project permanently removes all of its time entries.</p>
+        <p class="settings-footnote">Project totals include running time. Weekly totals use Sunday through Saturday in local time. Deleting a project permanently removes all of its time entries.</p>
       </section>
       <section id="page-settings" class="page" aria-labelledby="settings-heading" hidden>
         <div class="page-heading"><div><p class="eyebrow">MAKE YOURSELF AT HOME</p><h1 id="settings-heading">Settings<span>.</span></h1><p>A few little details to make this space yours.</p></div></div>
-        <article class="settings-card"><div class="setting-row"><div><h2>Appearance</h2><p>Choose the light that suits your day.</p></div><div class="theme-options" role="group" aria-label="Appearance"><button data-theme-choice="light" aria-pressed="true"><svg><use href="#i-sun"/></svg>Light</button><button data-theme-choice="dark" aria-pressed="false"><svg><use href="#i-moon"/></svg>Dark</button></div></div><div class="setting-row"><div><h2>Local storage</h2><p>Users, projects, time entries, and preferences stay in a local SQLite database.</p><code id="database-path">Connecting…</code></div><span id="database-badge" class="badge">Connecting</span></div><div class="setting-row"><div><h2>Time Tracker</h2><p>Desktop app · Windows, macOS &amp; Linux</p></div><span id="app-version" class="version-label">v0.2.0</span></div></article>
+        <article class="settings-card"><div class="setting-row"><div><h2>Appearance</h2><p>Choose the light that suits your day.</p></div><div class="theme-options" role="group" aria-label="Appearance"><button data-theme-choice="light" aria-pressed="true"><svg><use href="#i-sun"/></svg>Light</button><button data-theme-choice="dark" aria-pressed="false"><svg><use href="#i-moon"/></svg>Dark</button></div></div><div class="setting-row"><div><h2>Local storage</h2><p>Users, projects, time entries, and preferences stay in a local SQLite database.</p><code id="database-path">Connecting…</code></div><span id="database-badge" class="badge">Connecting</span></div><div class="setting-row"><div><h2>Time Tracker</h2><p>Desktop app · Windows, macOS &amp; Linux</p></div><span id="app-version" class="version-label">v0.3.0</span></div></article>
         <p class="settings-footnote">Timers continue from their original start time when you reopen the app. Stop a timer to save its clock-out time.</p>
       </section>
     </main>

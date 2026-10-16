@@ -26,7 +26,7 @@ The user explicitly wants successive builds and versions to connect to the same 
 - Notes are optional and limited to 255 characters in both application validation and SQLite constraints.
 - A time entry contains the clock-in and optional clock-out in one record. Delete the whole entry, or remove only clock-out to reopen it. Do not support deleting a clock-in while leaving its clock-out.
 - Removing clock-out preserves the original ID, clock-in, and notes. Another timer must be stopped first.
-- Completed project totals sum stopped pairs only. Show the currently running duration separately.
+- Project totals include both stopped sessions and elapsed running time and update every second. The right summary emphasizes the selected project's current-week total (Sunday 00:00 through the following Sunday 00:00 in local time) and shows a smaller all-time project total. Clip sessions to week boundaries, including those started in an earlier week; handle local calendar changes and DST.
 
 ## Implementation and verification
 
@@ -37,7 +37,7 @@ The user explicitly wants successive builds and versions to connect to the same 
 
 - Keep SQL and validation in `electron/storage.cjs`. Use foreign keys, database constraints, parameterized values, and transactions for mutations.
 - Keep the renderer sandboxed and isolated from Node. Expose a narrow preload API and validate IPC callers in the main process.
-- Run `npm run check` and the relevant tests. `npm run test:storage` verifies persistence and data rules; `npm run test:desktop` exercises the real Electron interface; `npm test` runs both.
+- Run `npm run check` and the relevant tests. `npm run test:storage` verifies persistence and data rules; `npm run test:time` verifies live totals and local week boundaries; `npm run test:desktop` exercises the real Electron interface. `npm test` runs all three suites.
 - Node 24 is available under `.tools/node-v24.22.0-win-x64` in this workspace. `dev.ps1` uses the portable runtime when it is present.
 - Desktop tests can require execution outside the restricted automation sandbox on Windows. Do not disable Electron's renderer sandbox to work around test-runner restrictions.
 - Build Windows artifacts with `npm run dist:win -- --publish never`. To reuse the installed Electron runtime, append `--config.electronDist=node_modules/electron/dist`.
