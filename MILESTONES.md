@@ -1,5 +1,26 @@
 # Time Tracker milestones
 
+## 2026-10-16: version 0.4.0 mini stopwatch widget
+
+### Implemented
+
+- Added a **Mini mode** button to the full window's toolbar and an **Exit mini** button on the widget.
+- Mini mode resizes the existing native window to approximately 640 × 160 content pixels (4:1), with fixed sizing, a draggable header/footer, and light/dark styling.
+- The widget shows the running session's user/project, stopwatch, editable notes, Save notes, Start/Stop, and a tiny current-week project total.
+- After Stop, user/project selectors become available and Start creates a new session with a new code. Entering mini from a different selected project follows the actual running session.
+- The opt-in **Always on top** checkbox controls native window pinning. Exit turns pinning off and restores the prior position, size, and maximized state. A DPI-rounding correction prevents normal-window size drift after repeated toggles.
+- Timer state and unsaved note drafts carry between views; switching modes does not stop or duplicate a session. Closing the widget and reopening recovers the running timer in normal mode, with pinning off.
+- Kept the same database path, app identity, relational schema version 2, session recovery, 255-character note limit, and Sunday–Saturday live totals.
+
+### Validation completed
+
+- Syntax checks and all 18 source tests passed: 8 database tests, 6 time-calculation tests, and 4 real Electron integration tests.
+- All 4 Electron integration tests also passed against the final packaged Windows v0.4.0 build; both installer and portable launcher report product version 0.4.0.
+- The mini integration test verifies native sizing, repeated-toggle bounds stability, native always-on-top, normal/maximized restoration, switching between projects, shared multi-line note drafts, new session IDs, live increments, and recovery after closing a pinned widget.
+- Inspected light and dark mini-mode screenshots and checked that widget controls fit without page overflow.
+
+Windows packages are `release/Time Tracker 0.4.0.exe` and `release/Time Tracker Setup 0.4.0.exe`. The GitHub multi-platform workflow was not triggered; macOS and Linux mini-mode behavior remains unverified here.
+
 ## 2026-10-16: version 0.3.0 live totals and current week
 
 ### Implemented

@@ -36,7 +36,7 @@
       </div>
     </aside>
     <main id="main-content">
-      <div class="topbar"><span class="breadcrumb">Workspace <span>/</span> <strong id="breadcrumb-page">Track time</strong></span><button id="theme-toggle" class="icon-button" aria-label="Switch to dark theme" title="Switch theme"><svg><use href="#i-moon"/></svg></button></div>
+      <div class="topbar"><span class="breadcrumb">Workspace <span>/</span> <strong id="breadcrumb-page">Track time</strong></span><div class="topbar-actions"><button id="enter-mini" class="button secondary" disabled>Mini mode</button><button id="theme-toggle" class="icon-button" aria-label="Switch to dark theme" title="Switch theme"><svg><use href="#i-moon"/></svg></button></div></div>
       <div id="running-banner" class="running-banner" hidden><span class="status-dot"></span><span id="running-description"></span><strong id="running-elapsed">00:00:00</strong><button class="text-button" id="show-running">Go to timer</button></div>
       <section id="page-today" class="page" aria-labelledby="today-heading">
         <div class="page-heading"><div><p class="eyebrow" id="today-date">YOUR DAY, AT A GLANCE</p><h1 id="today-heading">One project. One moment<span>.</span></h1><p>Choose a user and project, then let the clock do its thing.</p></div><span class="badge"><i class="status-dot"></i>All local. All yours.</span></div>
@@ -82,11 +82,21 @@
       </section>
       <section id="page-settings" class="page" aria-labelledby="settings-heading" hidden>
         <div class="page-heading"><div><p class="eyebrow">MAKE YOURSELF AT HOME</p><h1 id="settings-heading">Settings<span>.</span></h1><p>A few little details to make this space yours.</p></div></div>
-        <article class="settings-card"><div class="setting-row"><div><h2>Appearance</h2><p>Choose the light that suits your day.</p></div><div class="theme-options" role="group" aria-label="Appearance"><button data-theme-choice="light" aria-pressed="true"><svg><use href="#i-sun"/></svg>Light</button><button data-theme-choice="dark" aria-pressed="false"><svg><use href="#i-moon"/></svg>Dark</button></div></div><div class="setting-row"><div><h2>Local storage</h2><p>Users, projects, time entries, and preferences stay in a local SQLite database.</p><code id="database-path">Connecting…</code></div><span id="database-badge" class="badge">Connecting</span></div><div class="setting-row"><div><h2>Time Tracker</h2><p>Desktop app · Windows, macOS &amp; Linux</p></div><span id="app-version" class="version-label">v0.3.0</span></div></article>
+        <article class="settings-card"><div class="setting-row"><div><h2>Appearance</h2><p>Choose the light that suits your day.</p></div><div class="theme-options" role="group" aria-label="Appearance"><button data-theme-choice="light" aria-pressed="true"><svg><use href="#i-sun"/></svg>Light</button><button data-theme-choice="dark" aria-pressed="false"><svg><use href="#i-moon"/></svg>Dark</button></div></div><div class="setting-row"><div><h2>Local storage</h2><p>Users, projects, time entries, and preferences stay in a local SQLite database.</p><code id="database-path">Connecting…</code></div><span id="database-badge" class="badge">Connecting</span></div><div class="setting-row"><div><h2>Time Tracker</h2><p>Desktop app · Windows, macOS &amp; Linux</p></div><span id="app-version" class="version-label">v0.4.0</span></div></article>
         <p class="settings-footnote">Timers continue from their original start time when you reopen the app. Stop a timer to save its clock-out time.</p>
       </section>
     </main>
   </div>
+  <section id="mini-widget" aria-label="Mini time tracker" hidden>
+    <header class="mini-header"><span class="mini-brand"><img src="assets/icon.svg" alt="" />Time Tracker<span class="mini-badge">mini</span></span><div class="mini-window-actions"><label class="mini-pin"><input id="mini-always-on-top" type="checkbox" />Always on top</label><button id="exit-mini" class="mini-exit" type="button">Exit mini <span aria-hidden="true">↗</span></button></div></header>
+    <form id="mini-timer-form" class="mini-body">
+      <div class="mini-context"><label>User<select id="mini-user-select" aria-label="Mini user"></select></label><label>Project<select id="mini-project-select" aria-label="Mini project"></select></label></div>
+      <div class="mini-clock"><div id="mini-timer-display" role="timer" aria-label="Mini elapsed time">00:00:00</div><span id="mini-timer-status">Ready when you are</span></div>
+      <button id="mini-timer-button" type="submit" class="button primary" disabled>Start</button>
+      <div class="mini-notes-row"><label class="visually-hidden" for="mini-notes">Mini session notes</label><textarea id="mini-notes" rows="1" maxlength="255" placeholder="Session notes…"></textarea><button id="mini-save-notes" class="button secondary" type="button" disabled>Save notes</button></div>
+    </form>
+    <footer class="mini-footer"><span>This week <strong id="mini-week-total">00:00:00</strong></span><span id="mini-notes-status" role="status">Saved on your device</span></footer>
+  </section>
   <dialog id="action-dialog" aria-labelledby="dialog-title" aria-describedby="dialog-description"><form id="dialog-form"><h2 id="dialog-title"></h2><p id="dialog-description"></p><label id="dialog-label" for="dialog-value" hidden><span id="dialog-field-name"></span><textarea id="dialog-value" rows="3"></textarea></label><p id="dialog-error" class="form-error" role="alert" hidden></p><div class="dialog-actions"><button id="dialog-cancel" class="button secondary" type="button">Cancel</button><button id="dialog-confirm" class="button primary" type="submit">Save</button></div></form></dialog>
   <div id="toast" class="toast" role="status" hidden></div>
 </body>

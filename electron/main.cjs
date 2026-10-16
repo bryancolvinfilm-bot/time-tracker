@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu, dialog, ipcMain, nativeTheme, protocol, session } = require('electron');
+const { app, BrowserWindow, Menu, dialog, ipcMain, nativeTheme, protocol, screen, session } = require('electron');
 const path = require('node:path');
 const { readFile } = require('node:fs/promises');
 const { openStorage } = require('./storage.cjs');
@@ -6,6 +6,72 @@ const { openStorage } = require('./storage.cjs');
 const APP_URL = 'app://tracker/index.html';
 let storage;
 let mainWindow;
+let miniMode = false;
+let windowChanging = false;
+let normalWindow;
+
+function windowState() {
+  return { mini: miniMode, alwaysOnTop: mainWindow.isAlwaysOnTop() };
+}
+
+function updateTitleBar() {
+  if (process.platform === 'darwin') return;
+  const dark = nativeTheme.shouldUseDarkColors;
+  mainWindow?.setTitleBarOverlay({ color: dark ? '#171b22' : '#f7f8fa', symbolColor: dark ? '#edf0f5' : '#536075', height: miniMode ? 28 : 44 });
+}
+
+function restoreWindowBounds(bounds) {
+  mainWindow.setBounds(bounds);
+  // Fractional Windows DPI scaling can round a restored size up by a pixel.
+  // Compensate for small read-back differences so repeated toggles do not grow it.
+  const actual = mainWindow.getBounds();
+  const corrected = { ...bounds };
+  let needsCorrection = false;
+  for (const key of ['x', 'y', 'width', 'height']) {
+    const difference = actual[key] - bounds[key];
+    if (difference && Math.abs(difference) <= 4) {
+      corrected[key] -= difference;
+      needsCorrection = true;
+    }
+  }
+  if (needsCorrection) mainWindow.setBounds(corrected);
+}
+
+async function setMiniMode(enabled) {
+  if (typeof enabled !== 'boolean') throw new Error('Invalid mini mode setting.');
+  if (windowChanging) throw new Error('The window is changing modes. Please try again.');
+  if (enabled === miniMode) return windowState();
+  windowChanging = true;
+  try {
+    if (enabled) {
+      normalWindow = { bounds: mainWindow.getNormalBounds(), maximized: mainWindow.isMaximized(), fullscreen: mainWindow.isFullScreen() };
+      if (normalWindow.fullscreen) {
+        await new Promise((resolve) => { mainWindow.once('leave-full-screen', resolve); mainWindow.setFullScreen(false); });
+      }
+      if (mainWindow.isMaximized()) mainWindow.unmaximize();
+      mainWindow.setMinimumSize(0, 0);
+      mainWindow.setMaximizable(false);
+      mainWindow.setResizable(false);
+      miniMode = true;
+      updateTitleBar();
+      mainWindow.setContentSize(640, 160);
+      const bounds = mainWindow.getBounds();
+      const area = screen.getDisplayMatching(bounds).workArea;
+      mainWindow.setPosition(Math.max(area.x, Math.min(bounds.x, area.x + area.width - bounds.width)), Math.max(area.y, Math.min(bounds.y, area.y + area.height - bounds.height)));
+    } else {
+      mainWindow.setAlwaysOnTop(false);
+      miniMode = false;
+      updateTitleBar();
+      mainWindow.setResizable(true);
+      mainWindow.setMaximizable(true);
+      mainWindow.setMinimumSize(900, 680);
+      restoreWindowBounds(normalWindow.bounds);
+      if (normalWindow.maximized) mainWindow.maximize();
+      if (normalWindow.fullscreen) mainWindow.setFullScreen(true);
+    }
+    return windowState();
+  } finally { windowChanging = false; }
+}
 
 app.setName('Time Tracker');
 // A separate directory keeps automated checks away from real user preferences.
@@ -28,6 +94,8 @@ function trusted(event) {
 }
 
 function createWindow() {
+  miniMode = false;
+  normalWindow = null;
   mainWindow = new BrowserWindow({
     title: 'Time Tracker', width: 1240, height: 850, minWidth: 900, minHeight: 680,
     backgroundColor: nativeTheme.shouldUseDarkColors ? '#171b22' : '#f7f8fa',
@@ -73,6 +141,14 @@ if (hasLock) app.whenReady().then(() => {
     trusted(event);
     return storage.snapshot();
   });
+  ipcMain.handle('window:state', (event) => { trusted(event); return windowState(); });
+  ipcMain.handle('window:mini', (event, enabled) => { trusted(event); return setMiniMode(enabled); });
+  ipcMain.handle('window:top', (event, enabled) => {
+    trusted(event);
+    if (typeof enabled !== 'boolean' || !miniMode) throw new Error('Always on top is available in mini mode only.');
+    mainWindow.setAlwaysOnTop(enabled);
+    return windowState();
+  });
   ipcMain.handle('workspace:update', (event, operation, input) => {
     trusted(event);
     try { return { ok: true, workspace: storage.mutate(operation, input) }; }
@@ -83,7 +159,7 @@ if (hasLock) app.whenReady().then(() => {
     if (!['light', 'dark'].includes(theme)) throw new Error('Invalid theme.');
     storage.setTheme(theme);
     nativeTheme.themeSource = theme;
-    if (process.platform !== 'darwin') mainWindow?.setTitleBarOverlay({ color: theme === 'dark' ? '#171b22' : '#f7f8fa', symbolColor: theme === 'dark' ? '#edf0f5' : '#536075' });
+    updateTitleBar();
     return theme;
   });
   const template = [

@@ -101,3 +101,37 @@ dialog label{margin-top:20px}
 .busy main button,.busy main select{pointer-events:none}
 @media(min-width:1400px){.running-banner{margin-left:50px;margin-right:50px}.tracking-card .timer-display{font-size:76px}.project-summary{padding:28px}.summary-total{margin-top:0}}
 @media(max-width:1050px){.running-banner{margin-left:25px;margin-right:25px}.tracking-grid{grid-template-columns:minmax(0,1.55fr) minmax(185px,1fr);gap:14px}.tracking-card{padding-left:18px;padding-right:18px}.tracking-card .timer-display{font-size:52px}.tracking-card .timer-card-footer{margin-left:-18px;margin-right:-18px;padding-left:18px;padding-right:18px;font-size:9px}.selection-grid{gap:10px}.project-summary{padding:22px 17px}.summary-total strong{font-size:22px}.summary-week strong{font-size:30px}.summary-total{margin-top:0}.manager-row{align-items:flex-start;flex-direction:column;gap:15px}.manager-row .row-actions{justify-content:flex-start}.entry-footer{align-items:flex-start;flex-direction:column}.entry-footer .row-actions{justify-content:flex-start}.entry-fields{grid-template-columns:1fr 1fr .65fr;gap:12px}.notes-label span{font-size:9px}}
+
+/* Compact stopwatch window */
+.topbar-actions{display:flex;align-items:center;gap:10px}
+#enter-mini{min-height:29px;padding:6px 10px;font-size:10px}
+.visually-hidden{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+body.mini-mode{overflow:hidden;background:var(--bg)}
+.mini-mode .app-layout,.mini-mode>.titlebar{display:none}
+#mini-widget{height:100vh;display:grid;grid-template-rows:28px minmax(0,1fr) 20px;overflow:hidden;background:var(--bg)}
+.mini-header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 144px 0 12px;-webkit-app-region:drag;user-select:none;border-bottom:1px solid var(--line)}
+.mini-brand{display:flex;align-items:center;gap:6px;font-size:10px;font-weight:600;white-space:nowrap;color:var(--secondary)}
+.mini-brand img{height:16px;width:16px;border-radius:5px}
+.mini-badge{font-size:8px;letter-spacing:.5px;color:var(--accent);font-weight:400}
+.mini-window-actions{display:flex;align-items:center;gap:16px;-webkit-app-region:no-drag}
+.mini-pin{display:flex;flex-direction:row;align-items:center;gap:5px;font-size:9px;font-weight:400;white-space:nowrap;cursor:pointer}
+.mini-pin input{width:12px;height:12px;padding:0;margin:0;accent-color:var(--accent);cursor:pointer}
+.mini-exit{padding:3px 0;background:none;border:0;color:var(--accent);font-size:10px;font-weight:600;white-space:nowrap}
+.mini-exit span{margin-left:4px;font-size:13px}
+.mini-body{display:grid;grid-template-columns:minmax(0,1fr) 172px 80px;grid-template-rows:minmax(0,1fr) 28px;gap:7px 14px;align-items:center;padding:8px 12px 7px;margin:0}
+.mini-context{display:grid;grid-template-columns:.85fr 1.15fr;gap:8px;min-width:0}
+.mini-context label{font-size:8px;font-weight:500;color:var(--secondary);gap:5px}
+.mini-context select{padding:5px 20px 5px 7px;font-size:10px;border-radius:6px;height:29px;background:var(--surface);text-overflow:ellipsis}
+.mini-context select:disabled{opacity:1;color:var(--ink);cursor:default}
+.mini-clock{text-align:center;min-width:0;align-self:center}
+#mini-timer-display{font-size:32px;letter-spacing:-1px;font-weight:400;line-height:1.1;font-variant-numeric:tabular-nums}
+#mini-timer-status{display:block;font-size:8px;color:var(--secondary);margin-top:4px}
+#mini-timer-button{min-width:0;min-height:32px;font-size:11px;padding:7px 10px}
+.mini-notes-row{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) 80px;gap:14px;align-items:center;min-width:0}
+#mini-notes{height:28px;min-height:28px;max-height:28px;resize:none;padding:5px 8px;font-size:10px;line-height:16px;border-radius:6px;background:var(--surface)}
+#mini-save-notes{height:28px;min-height:28px;padding:5px;font-size:9px}
+.mini-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:8px;color:var(--secondary);padding:0 12px 3px;min-width:0;-webkit-app-region:drag;user-select:none}
+.mini-footer strong{font-weight:500;font-variant-numeric:tabular-nums;margin-left:5px;color:var(--ink)}
+#mini-notes-status{text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+body[data-platform=darwin] .mini-header{padding-left:82px;padding-right:12px}
+.busy #mini-widget button,.busy #mini-widget select{pointer-events:none}

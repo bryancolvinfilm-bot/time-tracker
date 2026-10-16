@@ -27,6 +27,7 @@ The user explicitly wants successive builds and versions to connect to the same 
 - A time entry contains the clock-in and optional clock-out in one record. Delete the whole entry, or remove only clock-out to reopen it. Do not support deleting a clock-in while leaving its clock-out.
 - Removing clock-out preserves the original ID, clock-in, and notes. Another timer must be stopped first.
 - Project totals include both stopped sessions and elapsed running time and update every second. The right summary emphasizes the selected project's current-week total (Sunday 00:00 through the following Sunday 00:00 in local time) and shows a smaller all-time project total. Clip sessions to week boundaries, including those started in an earlier week; handle local calendar changes and DST.
+- Mini mode resizes the same native window into an approximately 640 × 160 widget. Preserve the shared timer and note drafts when switching modes. Follow the running session; allow user/project switching when stopped. Always-on-top is opt-in and applies only in mini mode. Exit restores normal bounds/maximized state and clears pinning; reopening starts in normal mode without stopping the persisted timer. Keep window IPC narrow, caller-validated, and boolean-validated.
 
 ## Implementation and verification
 

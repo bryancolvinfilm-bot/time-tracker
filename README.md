@@ -2,7 +2,7 @@
 
 A self-contained Electron desktop app with a local SQLite database. No server, account, network connection, or separately installed database is needed to run the packaged app.
 
-Version 0.3.0 supports local users, their projects, persistent clock-in / clock-out sessions, and live project and weekly totals. Light and dark themes are included.
+Version 0.4.0 supports local users, projects, persistent sessions, live weekly totals, and a compact mini stopwatch window. Light and dark themes are included.
 
 Project instructions for future agents are in [AGENTS.md](AGENTS.md). Verified progress and the agreement to preserve the same database across versions are recorded in [MILESTONES.md](MILESTONES.md).
 
@@ -20,6 +20,14 @@ Both totals include running sessions and update every second. This week means Su
 Only one timer can run across the app. A running session is saved immediately with a random 64-character hexadecimal session code, its project, its start timestamp, and its notes. Closing or quitting the app does not clock out. Reopening finds the session without a clock-out time and displays elapsed time from its original start, including time spent with the app closed or the computer asleep. No background app process is needed for this behavior.
 
 Notes are optional and limited to 255 characters. Initial notes save with Start. For a running session, use **Save notes** or **Stop timer** to save changes. Use **Edit notes** on any entry to edit its saved notes.
+
+## Mini mode
+
+Choose **Mini mode** in the upper-right toolbar to shrink the actual application window into an approximately 640 × 160 horizontal widget. It shows the current user and project, the live stopwatch, editable notes, Start/Stop, Save notes, and a small current-week total at the bottom.
+
+If a timer is running, the widget follows that session even when a different project was selected in the full view. Stop it before switching the widget's user/project selectors; then enter notes and choose Start to create a new session. Timer state and note drafts are shared between the full and mini views. Use Save notes or Stop to save edits, with the same 255-character limit as the full view.
+
+Check **Always on top** to pin the widget above other windows. **Exit mini** restores the normal window's previous size, position, and maximized state, and turns off pinning. Drag the mini header or footer to move the widget. Switching modes does not stop a session. Closing and reopening still recovers a running session; the app starts in normal mode with pinning off.
 
 ## Entry and deletion controls
 
@@ -81,7 +89,7 @@ Git tracks source code, tests, icons, configuration, and project documentation. 
 - `electron/preload.cjs`: narrow API between the sandboxed UI and the main process. The renderer has no direct Node or SQL access.
 - `electron/storage.cjs`: SQLite schema, validation, transactional mutations, saved selections, and completed totals using Node's bundled `node:sqlite`.
 - `src/`: bundled interface, styles, scripts, and icons. No remote fonts or assets.
-- `src/time-utils.js`: shared, tested calculations for live project totals and local Sunday–Saturday weeks. These summaries are computed from existing timestamps; version 0.3.0 needs no database migration.
+- `src/time-utils.js`: shared, tested calculations for live project totals and local Sunday–Saturday weeks. These summaries are computed from existing timestamps; versions 0.3.0 and 0.4.0 need no database migration.
 
 The database has four shared relational tables: `users`, `projects`, `time_entries`, and `settings`. Projects reference a user; time entries reference a project. Foreign keys use `ON DELETE CASCADE`. A unique partial index enforces one entry with a null clock-out across the database, and a SQLite CHECK constraint enforces the 255-character notes limit. Each Start generates a new code using cryptographically random bytes. Timestamps are stored as Unix milliseconds and displayed in the computer's local timezone. Version 0.1 appearance preferences are preserved when the new tables are added.
 
@@ -96,7 +104,7 @@ npm test
 
 Run suites individually with `npm run test:storage`, `npm run test:time`, and `npm run test:desktop`.
 
-Database tests cover migration, ownership, session codes, exact totals, validation, persistence without an explicit close, cascading deletes, and the single-timer constraint across connections. Time-calculation tests cover running sessions, week boundaries, Sunday rollover, year boundaries, and spring/fall daylight-saving changes. Electron integration tests exercise the real interface and SQLite database, live weekly summaries, dated clock stamps, application reopening with a running timer, notes, renaming, deleting entries, removing clock-out, project/user deletion, navigation, renderer isolation, narrow-window overflow, and theme persistence. All test data is isolated in temporary directories.
+Database tests cover migration, ownership, session codes, exact totals, validation, persistence without an explicit close, cascading deletes, and the single-timer constraint across connections. Time-calculation tests cover running sessions, week boundaries, Sunday rollover, year boundaries, and spring/fall daylight-saving changes. Electron integration tests exercise the real interface, SQLite database, live weekly summaries, dated clock stamps, mini window sizing and native pinning, normal/maximized restoration, shared notes, reopening with a running timer, project/user management, renderer isolation, narrow-window overflow, and theme persistence. All test data is isolated in temporary directories.
 
 To verify the built Windows application in PowerShell:
 
@@ -117,7 +125,7 @@ npm run dist:mac    # macOS DMG and ZIP
 npm run dist:linux  # Linux AppImage and DEB
 ```
 
-Artifacts are written to `release/`. Users do not need Node.js or npm installed. Windows version 0.3.0 files are `Time Tracker Setup 0.3.0.exe` (installer) and `Time Tracker 0.3.0.exe` (portable launcher).
+Artifacts are written to `release/`. Users do not need Node.js or npm installed. Windows version 0.4.0 files are `Time Tracker Setup 0.4.0.exe` (installer) and `Time Tracker 0.4.0.exe` (portable launcher).
 
 One source codebase produces separate applications for each operating system. Build on the target OS for predictable results. The workflow in `.github/workflows/build.yml` uses Windows, macOS, and Linux runners, tests the app, and uploads builds. Run it manually after pushing this project to GitHub, or push a `v*` tag. The workflow builds the architecture of its runner; it does not yet produce every CPU architecture.
 

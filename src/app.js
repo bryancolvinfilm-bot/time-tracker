@@ -9,6 +9,8 @@ let selectedUserId = null;
 let selectedProjectId = null;
 let busy = false;
 let ready = false;
+let widgetWindow = { mini: false, alwaysOnTop: false };
+let windowBusy = false;
 let dialogAction;
 let toastTimeout;
 
@@ -77,6 +79,7 @@ async function saveTheme(value) {
 $('#theme-toggle').addEventListener('click', () => saveTheme(theme === 'light' ? 'dark' : 'light'));
 document.querySelectorAll('[data-theme-choice]').forEach((button) => button.addEventListener('click', () => saveTheme(button.dataset.themeChoice)));
 function notify(message) {
+  if (widgetWindow.mini) { $('#mini-notes-status').textContent = message; return; }
   $('#toast').textContent = message;
   $('#toast').hidden = false;
   clearTimeout(toastTimeout);
@@ -148,6 +151,7 @@ function render() {
   $('#project-name').disabled = !ready || !user;
   $('#user-name').disabled = !ready;
   $('#add-user-form button').disabled = !ready;
+  $('#enter-mini').disabled = !ready;
 
   $('#timer-state').textContent = trackingSelected ? 'Running' : 'Ready';
   $('#timer-state').classList.toggle('is-running', trackingSelected);
@@ -174,8 +178,62 @@ function render() {
   renderUsers();
   renderProjects();
   renderEntries();
+  renderMini();
   tick();
 }
+
+function renderMini() {
+  const active = activeEntry();
+  const project = active ? workspace.projects.find((item) => item.id === active.project_id) : selectedProject();
+  const userId = project?.user_id ?? selectedUserId;
+  populateSelect($('#mini-user-select'), workspace.users, userId, 'Choose a user');
+  populateSelect($('#mini-project-select'), workspace.projects.filter((item) => item.user_id === userId), project?.id, 'Choose a project');
+  if (active) {
+    $('#mini-user-select').disabled = true;
+    $('#mini-project-select').disabled = true;
+  }
+  $('#mini-notes').value = $('#timer-notes').value;
+  $('#mini-notes').disabled = !ready || !project;
+  $('#mini-timer-button').textContent = active ? 'Stop' : 'Start';
+  $('#mini-timer-button').classList.toggle('stop-button', !!active);
+  $('#mini-timer-button').disabled = !ready || !project;
+  $('#mini-save-notes').disabled = !active;
+  $('#mini-timer-status').textContent = active ? 'Running' : project ? 'Ready to start' : 'Choose a user and project';
+  $('#mini-timer-status').title = active ? `Started ${dateTime(active.clock_in)}` : '';
+  $('#mini-notes-status').textContent = 'Saved on your device';
+}
+
+function renderWindowState(state) {
+  widgetWindow = state;
+  document.body.classList.toggle('mini-mode', state.mini);
+  $('#mini-widget').hidden = !state.mini;
+  $('#mini-always-on-top').checked = state.alwaysOnTop;
+  $('#toast').hidden = true;
+}
+
+async function changeMiniMode(enabled) {
+  if (windowBusy) return;
+  windowBusy = true;
+  try {
+    if (enabled) {
+      const active = activeEntry();
+      if (active && active.project_id !== selectedProjectId) {
+        const project = workspace.projects.find((item) => item.id === active.project_id);
+        await select(project.user_id, project.id);
+      }
+      renderMini();
+    }
+    renderWindowState(await api.setMiniMode(enabled));
+    if (enabled) $('#mini-timer-button').focus();
+    else { go('today'); $('#enter-mini').focus(); }
+  } finally { windowBusy = false; }
+}
+$('#enter-mini').addEventListener('click', attempt(() => changeMiniMode(true)));
+$('#exit-mini').addEventListener('click', attempt(() => changeMiniMode(false)));
+$('#mini-always-on-top').addEventListener('change', attempt(async () => {
+  try { renderWindowState(await api.setAlwaysOnTop($('#mini-always-on-top').checked)); }
+  catch (error) { renderWindowState(widgetWindow); throw error; }
+}));
 function renderUsers() {
   const list = $('#users-list');
   list.replaceChildren();
@@ -255,10 +313,13 @@ function tick() {
   const active = activeEntry();
   const elapsed = active ? duration(now - active.clock_in) : '00:00:00';
   $('#running-elapsed').textContent = elapsed;
+  $('#mini-timer-display').textContent = elapsed;
   $('#timer-display').textContent = active?.project_id === selectedProjectId ? elapsed : '00:00:00';
   const totals = projectTotals(workspace.entries, selectedProjectId, now);
   $('#project-total').textContent = duration(totals.totalMs);
   $('#project-week-total').textContent = duration(totals.weekMs);
+  const miniTotals = active && active.project_id !== selectedProjectId ? projectTotals(workspace.entries, active.project_id, now) : totals;
+  $('#mini-week-total').textContent = duration(miniTotals.weekMs);
   const weekDateFormat = new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
   $('#project-week-range').textContent = weekDateFormat.formatRange(new Date(totals.week.start), new Date(totals.week.end - 1));
   document.querySelectorAll('[data-project-total]').forEach((node) => {
@@ -292,9 +353,8 @@ $('#add-project-form').addEventListener('submit', attempt(async () => {
   $('#add-project-form').reset();
   notify('Project added. Choose Track time when you are ready.');
 }));
-$('#timer-form').addEventListener('submit', attempt(async () => {
+async function submitTimer(notes) {
   const active = activeEntry();
-  const notes = $('#timer-notes').value;
   if (active && active.project_id === selectedProjectId) {
     await run('timer:stop', { id: active.id, notes });
     notify('Timer stopped. Your time is saved.');
@@ -302,6 +362,18 @@ $('#timer-form').addEventListener('submit', attempt(async () => {
     await run('timer:start', { userId: selectedUserId, projectId: selectedProjectId, notes });
     notify('Timer started and saved. It keeps running if you close the app.');
   }
+}
+$('#timer-form').addEventListener('submit', attempt(() => submitTimer($('#timer-notes').value)));
+$('#mini-timer-form').addEventListener('submit', attempt(() => submitTimer($('#mini-notes').value)));
+$('#mini-user-select').addEventListener('change', attempt(async (event) => {
+  const userId = event.target.value || null;
+  await select(userId, workspace.projects.find((project) => project.user_id === userId)?.id ?? null);
+}));
+$('#mini-project-select').addEventListener('change', attempt((event) => select(selectedUserId, event.target.value || null)));
+$('#mini-save-notes').addEventListener('click', attempt(async () => {
+  const active = activeEntry();
+  if (active) await run('entry:notes', { id: active.id, notes: $('#mini-notes').value });
+  $('#mini-notes-status').textContent = 'Notes saved';
 }));
 $('#save-running-notes').addEventListener('click', attempt(async () => {
   const active = activeEntry();
@@ -309,7 +381,12 @@ $('#save-running-notes').addEventListener('click', attempt(async () => {
   $('#notes-status').textContent = 'Notes saved';
 }));
 $('#timer-notes').addEventListener('input', () => {
+  $('#mini-notes').value = $('#timer-notes').value;
   if (activeEntry()?.project_id === selectedProjectId) $('#notes-status').textContent = 'Save notes or stop the timer to keep changes.';
+});
+$('#mini-notes').addEventListener('input', () => {
+  $('#timer-notes').value = $('#mini-notes').value;
+  $('#mini-notes-status').textContent = activeEntry() ? 'Save notes or Stop to keep changes' : 'Notes save when you Start';
 });
 $('#show-running').addEventListener('click', attempt(async () => {
   const active = activeEntry();
@@ -393,6 +470,7 @@ async function initialize() {
     const snapshot = await api.getWorkspace();
     ready = true;
     applyWorkspace(snapshot, true);
+    renderWindowState(await api.getWindowState());
     if (activeEntry()) go('today');
     $('#storage-status').textContent = 'Saved on your device · SQLite connected';
     $('#database-path').textContent = info.storage.path;
