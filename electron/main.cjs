@@ -1,6 +1,8 @@
 const { app, BrowserWindow, Menu, dialog, ipcMain, nativeTheme, protocol, screen, session } = require('electron');
 const path = require('node:path');
 const { readFile } = require('node:fs/promises');
+const { writeFileSync } = require('node:fs');
+const { tmpdir } = require('node:os');
 const { openStorage } = require('./storage.cjs');
 
 const APP_URL = 'app://tracker/index.html';
@@ -9,6 +11,14 @@ let mainWindow;
 let miniMode = false;
 let windowChanging = false;
 let normalWindow;
+
+function signalPortableReady() {
+  const marker = process.env.TIME_TRACKER_PORTABLE_READY;
+  if (!marker) return;
+  const relative = path.relative(tmpdir(), path.resolve(marker));
+  if (relative.startsWith('..') || path.isAbsolute(relative) || path.basename(marker) !== 'time-tracker-ready') return;
+  try { writeFileSync(marker, 'ready'); } catch { /* Status feedback must not block startup. */ }
+}
 
 function windowState() {
   return { mini: miniMode, alwaysOnTop: mainWindow.isAlwaysOnTop() };
@@ -80,7 +90,7 @@ protocol.registerSchemesAsPrivileged([{ scheme: 'app', privileges: { standard: t
 
 // A second process must not show an out-of-date timer or edit the same workspace.
 const hasLock = app.requestSingleInstanceLock();
-if (!hasLock) app.quit();
+if (!hasLock) { signalPortableReady(); app.quit(); }
 app.on('second-instance', () => {
   if (mainWindow?.isMinimized()) mainWindow.restore();
   mainWindow?.show();
@@ -107,7 +117,7 @@ function createWindow() {
   });
   mainWindow.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   mainWindow.webContents.on('will-navigate', (event, url) => { if (url !== APP_URL) event.preventDefault(); });
-  mainWindow.once('ready-to-show', () => mainWindow.show());
+  mainWindow.once('ready-to-show', () => { mainWindow.show(); signalPortableReady(); });
   mainWindow.on('closed', () => { mainWindow = null; });
   mainWindow.loadURL(APP_URL);
 }
@@ -175,6 +185,7 @@ if (hasLock) app.whenReady().then(() => {
   app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
 }).catch((error) => {
   console.error('Time Tracker startup failed:', error);
+  signalPortableReady();
   dialog.showErrorBox('Time Tracker could not start', error.message);
   app.quit();
 });

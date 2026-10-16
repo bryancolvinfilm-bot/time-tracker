@@ -2,7 +2,7 @@
 
 A self-contained Electron desktop app with a local SQLite database. No server, account, network connection, or separately installed database is needed to run the packaged app.
 
-Version 0.4.0 supports local users, projects, persistent sessions, live weekly totals, and a compact mini stopwatch window. Light and dark themes are included.
+Version 0.4.1 supports local users, projects, persistent sessions, live weekly totals, a compact mini stopwatch window, and animated portable-startup feedback. Light and dark themes are included.
 
 Project instructions for future agents are in [AGENTS.md](AGENTS.md). Verified progress and the agreement to preserve the same database across versions are recorded in [MILESTONES.md](MILESTONES.md).
 
@@ -28,6 +28,14 @@ Choose **Mini mode** in the upper-right toolbar to shrink the actual application
 If a timer is running, the widget follows that session even when a different project was selected in the full view. Stop it before switching the widget's user/project selectors; then enter notes and choose Start to create a new session. Timer state and note drafts are shared between the full and mini views. Use Save notes or Stop to save edits, with the same 255-character limit as the full view.
 
 Check **Always on top** to pin the widget above other windows. **Exit mini** restores the normal window's previous size, position, and maximized state, and turns off pinning. Drag the mini header or footer to move the widget. Switching modes does not stop a session. Closing and reopening still recovers a running session; the app starts in normal mode with pinning off.
+
+## Portable Windows startup
+
+`Time Tracker 0.4.1.exe` is the portable launcher. It shows a small native status window with an animated activity bar while unpacking, changes the message to **Starting Time Tracker...**, and dismisses the window when the app is ready. The animation indicates activity rather than a completion percentage. Each launch uses its own temporary extraction folder and keeps the normal shared SQLite database in AppData.
+
+The Setup EXE installs the app once; launch the installed shortcut afterward to avoid repeated extraction. The directly launched `release/win-unpacked/Time Tracker.exe` also starts without unpacking.
+
+The startup customization lives in `build/portable-startup.nsh` and the in-memory adapter `scripts/portable-startup.cjs`. It uses the pinned electron-builder template and fails the build if its expected anchors change. After building on Windows, `npm run test:portable` launches the actual portable EXE with isolated test data and verifies native window visibility, marquee configuration, readiness handoff, and clean exit. The regular Electron suite tests the readiness signal as well.
 
 ## Entry and deletion controls
 
@@ -125,7 +133,7 @@ npm run dist:mac    # macOS DMG and ZIP
 npm run dist:linux  # Linux AppImage and DEB
 ```
 
-Artifacts are written to `release/`. Users do not need Node.js or npm installed. Windows version 0.4.0 files are `Time Tracker Setup 0.4.0.exe` (installer) and `Time Tracker 0.4.0.exe` (portable launcher).
+Artifacts are written to `release/`. Users do not need Node.js or npm installed. Windows version 0.4.1 files are `Time Tracker Setup 0.4.1.exe` (installer) and `Time Tracker 0.4.1.exe` (portable launcher).
 
 One source codebase produces separate applications for each operating system. Build on the target OS for predictable results. The workflow in `.github/workflows/build.yml` uses Windows, macOS, and Linux runners, tests the app, and uploads builds. Run it manually after pushing this project to GitHub, or push a `v*` tag. The workflow builds the architecture of its runner; it does not yet produce every CPU architecture.
 

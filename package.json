@@ -1,7 +1,7 @@
 {
   "name": "time-tracker",
   "productName": "Time Tracker",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "A quiet, local-first home for your time.",
   "private": true,
   "author": "Time Tracker",
@@ -10,11 +10,12 @@
   "scripts": {
     "start": "electron .",
     "dev": "electron .",
-    "check": "node --check electron/main.cjs && node --check electron/preload.cjs && node --check electron/storage.cjs && node --check src/time-utils.js && node --check src/app.js",
+    "check": "node --check electron/main.cjs && node --check electron/preload.cjs && node --check electron/storage.cjs && node --check src/time-utils.js && node --check src/app.js && node --check scripts/portable-startup.cjs && node --check scripts/test-portable.cjs",
     "test": "npm run test:storage && npm run test:time && npm run test:desktop",
     "test:storage": "node --test tests/storage.test.cjs",
     "test:time": "node --test tests/time.test.cjs",
     "test:desktop": "playwright test",
+    "test:portable": "node scripts/test-portable.cjs",
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
     "dist:win": "electron-builder --win",
@@ -30,6 +31,7 @@
     "appId": "app.timetracker.desktop",
     "productName": "Time Tracker",
     "asar": true,
+    "beforeBuild": "./scripts/portable-startup.cjs",
     "directories": {
       "output": "release"
     },

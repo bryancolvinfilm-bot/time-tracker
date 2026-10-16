@@ -39,6 +39,9 @@ jobs:
         run: npm run dist:${{ matrix.target }} -- --publish never
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - name: Verify Windows portable startup
+        if: runner.os == 'Windows'
+        run: npm run test:portable
       - uses: actions/upload-artifact@v4
         with:
           name: Time-Tracker-${{ matrix.target }}

@@ -1,5 +1,21 @@
 # Time Tracker milestones
 
+## 2026-10-16: version 0.4.1 portable startup feedback
+
+### Implemented
+
+- The Windows portable EXE now shows a small native status window with an animated activity bar before extracting Electron. It says **Unpacking Time Tracker...**, then **Starting Time Tracker...**, and hides when the application window appears.
+- Each launch uses its own temporary extraction directory. The launcher waits for the application to exit before cleaning up its files.
+- Added a readiness handshake, a guarded adapter for the pinned electron-builder portable template, and a real portable-launch verification command. The Windows GitHub packaging job also runs that check.
+- Kept the same application identity, SQLite location, schema, records, and running-timer recovery. Normal startup has no artificial delay; the installer keeps its existing setup behavior.
+
+### Validation completed
+
+- Syntax checks passed. The initial complete source run passed all 19 tests: 8 database, 6 time-calculation, and 5 Electron integration tests.
+- The final packaged app passed shell, readiness, weekly-total, and tracking integration tests. Later mini tests failed because native `setAlwaysOnTop(true)` returned false on this desktop. Repeating the test with the previous committed main process and mini test reproduced the same failure; it is not caused by the startup changes. Mini pinning needs a further check on a desktop where Windows permits native pinning.
+- The real portable EXE passed visible-window/animation-style, readiness/hiding, isolated SQLite, version, and clean-exit checks. Visually inspected the status window and observed the animation change between frames during an opt-in inspection pause.
+- Built both `release/Time Tracker 0.4.1.exe` and `release/Time Tracker Setup 0.4.1.exe`, with product version 0.4.1. No macOS/Linux build or GitHub workflow was triggered.
+
 ## 2026-10-16: version 0.4.0 mini stopwatch widget
 
 ### Implemented
