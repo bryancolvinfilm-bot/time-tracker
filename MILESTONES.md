@@ -1,5 +1,15 @@
 # Time Tracker milestones
 
+## 2026-10-16: version 0.4.2 Mac development signing and package checks
+
+- Investigated the user's M1 "app is damaged" report after installing from the workflow DMG. The previous build log explicitly skipped application signing; its architecture was already the correct arm64.
+- Enabled explicit ad-hoc signing for the app and helpers, with hardened runtime and JIT/library-validation entitlements. This supplies valid development signatures without claiming an Apple Developer ID identity.
+- Added `npm run test:mac` to verify the DMG, copy its app as during installation, extract the app ZIP, and verify both bundles using `codesign --verify --deep --strict`. The copied DMG app also runs all five desktop integration tests with isolated databases before upload.
+- Local syntax, Bash syntax, plist, workflow YAML, and version-metadata checks passed. GitHub Actions [run 38974140506](https://github.com/bryancolvinfilm-bot/time-tracker/actions/runs/38974140506), at commit `8c467eb`, passed on Windows, macOS, and Linux. Each platform passed the 19 source tests; Mac additionally passed all five packaged-app tests, and Windows passed its real portable-launch check.
+- Both Mac bundles reported `Signature=adhoc`, `valid on disk`, and satisfaction of their designated requirements. Verified all three version 0.4.2 artifacts uploaded, including the [Mac download](https://github.com/bryancolvinfilm-bot/time-tracker/actions/runs/38974140506/artifacts/12077938758).
+- Mac notarization was skipped because Apple signing/notarization credentials are not configured. Hosted signature and launch checks do not reproduce browser quarantine or prove Gatekeeper acceptance on the user's M1. Documented the app-specific Open Anyway route where macOS offers it; full public distribution requires Developer ID signing and notarization. User confirmation after downloading 0.4.2 remains outstanding.
+- Application identity, database location, schema version, and existing/running timer records are unchanged. The latest version 0.4.2 packages are in GitHub Actions artifacts; local `release/` still contains the previously built Windows packages.
+
 ## 2026-10-16: successful Windows, macOS, and Linux cloud builds
 
 - Fixed Linux desktop testing by installing Openbox and `x11-utils` and running the full suite with Openbox on the same Xvfb display as Electron. The script waits for window-manager readiness and cleans up afterward. Native maximize/restore assertions remain enabled.
