@@ -1,5 +1,16 @@
 # Time Tracker milestones
 
+## 2026-10-16: version 0.4.3 confirmed Mac Finder icon defect
+
+- The user reported that 0.4.2 still would not open on their M1 and that its Finder icon rendered as scrambled pixels, despite the icon looking correct in the DMG.
+- Inspected the exact downloaded 0.4.2 artifact. Its ICNS contained PNG data in `icp4`/`icp5`/`icp6` small-icon entries and a 512px PNG in `ic13`, which should be 256px. The upstream converter [documents these defects](https://github.com/electron-userland/electron-builder-binaries/blob/master/packages/icons/CHANGELOG.md). This confirms an icon packaging bug, independently of the remaining launch warning.
+- Replaced automatic PNG-to-ICNS conversion with Apple's `sips` and `iconutil` via `scripts/prepare-mac-icon.sh`. The build generates the full iconset, including native small representations and 1024px coverage. Generated ICNS output stays ignored by Git.
+- Added `scripts/check-mac-icon.cjs` and packaged-icon decoding checks. The regression check rejects the published 0.4.2 icon. Bash/JavaScript syntax, package metadata, and diff checks passed locally.
+- GitHub Actions [run 38976722854](https://github.com/bryancolvinfilm-bot/time-tracker/actions/runs/38976722854), at commit `cb7bf5a`, succeeded on all three platforms. Each passed all 19 source tests. Mac additionally passed deep/strict signatures, icon-entry checks, Apple's ICNS decoding for both packaged bundles, and all five desktop tests on the DMG's copied app. Windows passed the real portable-launch check.
+- The corrected bundles contain native `ic04`/`ic05` small icons and correctly sized Retina entries. Verified upload of all version 0.4.3 artifacts, including the [Mac artifact](https://github.com/bryancolvinfilm-bot/time-tracker/actions/runs/38976722854/artifacts/12079337771).
+- The user's M1 launch failure and Chrome dangerous-download warning remain unresolved. Ad-hoc signing is not notarization, and the hosted checks do not establish Gatekeeper acceptance on that Mac. The user deferred local Terminal diagnostics and does not want to debug now; do not ask them to repeat those steps until they resume that work. Do not describe the icon fix as a verified fix for the launch failure.
+- Database location, application identity, schema, saved records, and running timers remain unchanged. New packages are in GitHub Actions; local Windows build outputs remain older versions.
+
 ## 2026-10-16: version 0.4.2 Mac development signing and package checks
 
 - Investigated the user's M1 "app is damaged" report after installing from the workflow DMG. The previous build log explicitly skipped application signing; its architecture was already the correct arm64.
