@@ -1,5 +1,14 @@
 # Time Tracker milestones
 
+## 2026-10-16: successful Windows, macOS, and Linux cloud builds
+
+- Fixed Linux desktop testing by installing Openbox and `x11-utils` and running the full suite with Openbox on the same Xvfb display as Electron. The script waits for window-manager readiness and cleans up afterward. Native maximize/restore assertions remain enabled.
+- Added the project homepage and Linux Debian maintainer metadata using Bryan Colvin's GitHub noreply address. Both AppImage and Debian packages now build.
+- Local JavaScript syntax checks, Bash syntax checks, and workflow YAML parsing passed. The pinned electron-builder Debian metadata validation also passed.
+- GitHub Actions [run 38973097554](https://github.com/bryancolvinfilm-bot/time-tracker/actions/runs/38973097554), at application/configuration commit `b5b092d`, completed successfully on all three operating systems. Each job ran the full 19-test suite before packaging; Windows also passed the real portable-launch check.
+- Verified uploaded artifacts `Time-Tracker-win`, `Time-Tracker-mac`, and `Time-Tracker-linux`. The Linux artifact contains the AppImage and Debian outputs. These are workflow artifacts rather than published GitHub Releases.
+- Application version remains 0.4.1. Timer behavior, database schema, storage location, and existing local records are unchanged. Hosted Linux desktop tests passed; installation on a physical Linux desktop was not tested here.
+
 ## 2026-10-16: public sharing with owner-only write access
 
 - Changed only `bryancolvinfilm-bot/time-tracker` from private to public at the user's request. Other repositories were not changed.
