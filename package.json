@@ -3,6 +3,7 @@
   "productName": "Time Tracker",
   "version": "0.4.1",
   "description": "A quiet, local-first home for your time.",
+  "homepage": "https://github.com/bryancolvinfilm-bot/time-tracker",
   "private": true,
   "author": "Time Tracker",
   "license": "MIT",
@@ -61,6 +62,7 @@
       "icon": "src/assets/icon.png"
     },
     "linux": {
+      "maintainer": "Bryan Colvin <bryancolvinfilm-bot@users.noreply.github.com>",
       "target": [
         "AppImage",
         "deb"
