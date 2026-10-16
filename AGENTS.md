@@ -43,6 +43,7 @@ The user explicitly wants successive builds and versions to connect to the same 
 - Run `npm run check` and the relevant tests. `npm run test:storage` verifies persistence and data rules; `npm run test:time` verifies live totals and local week boundaries; `npm run test:desktop` exercises the real Electron interface. `npm test` runs all three suites.
 - Node 24 is available under `.tools/node-v24.22.0-win-x64` in this workspace. `dev.ps1` uses the portable runtime when it is present.
 - Desktop tests can require execution outside the restricted automation sandbox on Windows. Do not disable Electron's renderer sandbox to work around test-runner restrictions.
+- Headless Linux desktop tests need both Xvfb and a window manager. Keep the Openbox setup in `scripts/test-linux.sh` and the workflow dependency installation; do not skip native maximize/restore assertions to make a bare Xvfb environment pass.
 - Build Windows artifacts with `npm run dist:win -- --publish never`. To reuse the installed Electron runtime, append `--config.electronDist=node_modules/electron/dist`.
 - When producing a new build, test `release/win-unpacked/Time Tracker.exe` using `TIME_TRACKER_EXECUTABLE` as described in README. Keep test data isolated.
 - Update `MILESTONES.md` after a completed milestone with the version, actual validation results, and remaining scope. Do not describe planned work as implemented or tests as passed unless verified.

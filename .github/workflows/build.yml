@@ -29,12 +29,17 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run check
+      - name: Install Linux window manager
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends openbox x11-utils
       - name: Verify desktop shell
         if: runner.os != 'Linux'
         run: npm test
       - name: Verify desktop shell on Linux
         if: runner.os == 'Linux'
-        run: xvfb-run --auto-servernum npm test
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" bash scripts/test-linux.sh
       - name: Package app
         run: npm run dist:${{ matrix.target }} -- --publish never
         env:

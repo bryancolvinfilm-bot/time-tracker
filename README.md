@@ -120,6 +120,8 @@ npm test
 
 Run suites individually with `npm run test:storage`, `npm run test:time`, and `npm run test:desktop`.
 
+For headless Linux desktop tests, install Xvfb, Openbox, and `x11-utils`, then run `xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" bash scripts/test-linux.sh`. The script starts Openbox on the virtual display, waits for it to register, runs the full test suite, and stops its window manager afterward. Xvfb alone does not supply the window manager needed by the maximize/restore checks. GitHub Actions configures this environment automatically.
+
 Database tests cover migration, ownership, session codes, exact totals, validation, persistence without an explicit close, cascading deletes, and the single-timer constraint across connections. Time-calculation tests cover running sessions, week boundaries, Sunday rollover, year boundaries, and spring/fall daylight-saving changes. Electron integration tests exercise the real interface, SQLite database, live weekly summaries, dated clock stamps, mini window sizing and native pinning, normal/maximized restoration, shared notes, reopening with a running timer, project/user management, renderer isolation, narrow-window overflow, and theme persistence. All test data is isolated in temporary directories.
 
 To verify the built Windows application in PowerShell:
