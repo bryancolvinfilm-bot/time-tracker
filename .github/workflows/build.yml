@@ -47,6 +47,9 @@ jobs:
       - name: Verify Windows portable startup
         if: runner.os == 'Windows'
         run: npm run test:portable
+      - name: Verify Mac package signatures and installed app
+        if: runner.os == 'macOS'
+        run: npm run test:mac
       - uses: actions/upload-artifact@v4
         with:
           name: Time-Tracker-${{ matrix.target }}

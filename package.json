@@ -1,7 +1,7 @@
 {
   "name": "time-tracker",
   "productName": "Time Tracker",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "A quiet, local-first home for your time.",
   "homepage": "https://github.com/bryancolvinfilm-bot/time-tracker",
   "private": true,
@@ -17,6 +17,7 @@
     "test:time": "node --test tests/time.test.cjs",
     "test:desktop": "playwright test",
     "test:portable": "node scripts/test-portable.cjs",
+    "test:mac": "bash scripts/test-mac.sh",
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
     "dist:win": "electron-builder --win",
@@ -54,6 +55,10 @@
       "createDesktopShortcut": true
     },
     "mac": {
+      "identity": "-",
+      "hardenedRuntime": true,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
       "target": [
         "dmg",
         "zip"

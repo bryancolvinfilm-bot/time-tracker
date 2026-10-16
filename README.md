@@ -1,8 +1,8 @@
-﻿# Time Tracker
+# Time Tracker
 
 A self-contained Electron desktop app with a local SQLite database. No server, account, network connection, or separately installed database is needed to run the packaged app.
 
-Version 0.4.1 supports local users, projects, persistent sessions, live weekly totals, a compact mini stopwatch window, and animated portable-startup feedback. Light and dark themes are included.
+Version 0.4.2 supports local users, projects, persistent sessions, live weekly totals, a compact mini stopwatch window, and animated portable-startup feedback. Light and dark themes are included.
 
 Project instructions for future agents are in [AGENTS.md](AGENTS.md). Verified progress and the agreement to preserve the same database across versions are recorded in [MILESTONES.md](MILESTONES.md).
 
@@ -31,11 +31,17 @@ Check **Always on top** to pin the widget above other windows. **Exit mini** res
 
 ## Portable Windows startup
 
-`Time Tracker 0.4.1.exe` is the portable launcher. It shows a small native status window with an animated activity bar while unpacking, changes the message to **Starting Time Tracker...**, and dismisses the window when the app is ready. The animation indicates activity rather than a completion percentage. Each launch uses its own temporary extraction folder and keeps the normal shared SQLite database in AppData.
+`Time Tracker 0.4.2.exe` is the portable launcher. It shows a small native status window with an animated activity bar while unpacking, changes the message to **Starting Time Tracker...**, and dismisses the window when the app is ready. The animation indicates activity rather than a completion percentage. Each launch uses its own temporary extraction folder and keeps the normal shared SQLite database in AppData.
 
 The Setup EXE installs the app once; launch the installed shortcut afterward to avoid repeated extraction. The directly launched `release/win-unpacked/Time Tracker.exe` also starts without unpacking.
 
 The startup customization lives in `build/portable-startup.nsh` and the in-memory adapter `scripts/portable-startup.cjs`. It uses the pinned electron-builder template and fails the build if its expected anchors change. After building on Windows, `npm run test:portable` launches the actual portable EXE with isolated test data and verifies native window visibility, marquee configuration, readiness handoff, and clean exit. The regular Electron suite tests the readiness signal as well.
+
+## Mac development builds
+
+The GitHub Mac build targets Apple Silicon (M1 and later). Extract the workflow artifact ZIP, mount the DMG, and drag Time Tracker into Applications. Version 0.4.2 explicitly signs the app and its helpers with an ad-hoc development signature, preserving signature integrity after packaging. `npm run test:mac` verifies signatures in both the DMG and app ZIP and runs desktop integration tests on an app copied from the DMG.
+
+These builds are not signed with an Apple Developer ID or notarized by Apple. A successful cloud build does not guarantee Gatekeeper acceptance after browser download. If macOS blocks this development build and offers **System Settings > Privacy & Security > Open Anyway**, use that app-specific exception only for the copy obtained from this project's workflow. See [Apple's instructions](https://support.apple.com/en-us/102445). If macOS still reports damage, obtain the output of `codesign --verify --deep --strict --verbose=2 "/Applications/Time Tracker.app"` before changing security settings. Normal public distribution requires Developer ID signing and notarization, which are not configured yet.
 
 ## Entry and deletion controls
 
@@ -143,7 +149,7 @@ npm run dist:mac    # macOS DMG and ZIP
 npm run dist:linux  # Linux AppImage and DEB
 ```
 
-Artifacts are written to `release/`. Users do not need Node.js or npm installed. Windows version 0.4.1 files are `Time Tracker Setup 0.4.1.exe` (installer) and `Time Tracker 0.4.1.exe` (portable launcher).
+Artifacts are written to `release/`. Users do not need Node.js or npm installed. Windows version 0.4.2 files are `Time Tracker Setup 0.4.2.exe` (installer) and `Time Tracker 0.4.2.exe` (portable launcher).
 
 One source codebase produces separate applications for each operating system. Build on the target OS for predictable results. The workflow in `.github/workflows/build.yml` uses Windows, macOS, and Linux runners, tests the app, and uploads builds. Run it manually after pushing this project to GitHub, or push a `v*` tag. The workflow builds the architecture of its runner; it does not yet produce every CPU architecture.
 
