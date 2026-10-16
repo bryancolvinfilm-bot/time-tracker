@@ -1,0 +1,14 @@
+node_modules/
+release/
+.tools/
+test-results/
+playwright-report/
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+*.sqlite-journal
+.env
+.env.*
+!.env.example
+.DS_Store
+Thumbs.db

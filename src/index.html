@@ -1,0 +1,92 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Time Tracker</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <svg class="icon-definitions" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7v5l3.5 2"/></symbol>
+    <symbol id="i-grid" viewBox="0 0 24 24"><rect x="4" y="4" width="6" height="6" rx="1.5"/><rect x="14" y="4" width="6" height="6" rx="1.5"/><rect x="4" y="14" width="6" height="6" rx="1.5"/><rect x="14" y="14" width="6" height="6" rx="1.5"/></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h5l2 3h7a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2M16 5a3 3 0 0 1 0 6m2 3a5 5 0 0 1 3 4v2"/></symbol>
+    <symbol id="i-settings" viewBox="0 0 24 24"><path d="m9 4 1-2h4l1 2 2 1 2 0 2 4-1 2v2l1 2-2 4h-2l-2 1-1 2h-4l-1-2-2-1H5l-2-4 1-2v-2L3 9l2-4h2Z" transform="translate(1 1) scale(.9)"/><circle cx="12" cy="12" r="3"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6Z"/><path d="m8.5 12 2.5 2.5 4.5-5"/></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l1.5 1.5m11 11L19 19M5 19l1.5-1.5m11-11L19 5"/></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 15A9 9 0 0 1 9 4a9 9 0 1 0 11 11Z"/></symbol>
+  </svg>
+  <header class="titlebar"><span>Time Tracker</span></header>
+  <div class="app-layout">
+    <aside class="sidebar" aria-label="Main navigation">
+      <a class="brand" href="#today" aria-label="Time Tracker home"><img src="assets/icon.svg" alt="" /><span>Time Tracker<span class="brand-caption">A little more intentional.</span></span></a>
+      <div class="workspace-label">YOUR WORKSPACE</div>
+      <nav class="navigation">
+        <button class="nav-item active" data-page="today" aria-current="page"><svg><use href="#i-clock"/></svg>Track time<span class="nav-dot"></span></button>
+        <button class="nav-item" data-page="users"><svg><use href="#i-users"/></svg>Users</button>
+        <button class="nav-item" data-page="projects"><svg><use href="#i-folder"/></svg>Projects</button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="local-note"><div class="local-note-icon"><svg><use href="#i-shield"/></svg></div><strong>Your time. Your space.</strong><p>Stored on your device.<br />No account. No cloud.</p><span><i class="status-dot"></i>Local workspace</span></div>
+        <button class="nav-item" data-page="settings"><svg><use href="#i-settings"/></svg>Settings</button>
+        <div class="sidebar-footer"><span class="avatar" id="user-avatar">T</span><span><span id="sidebar-user">Your workspace</span><small>Local profiles</small></span><span class="footer-indicator"></span></div>
+      </div>
+    </aside>
+    <main id="main-content">
+      <div class="topbar"><span class="breadcrumb">Workspace <span>/</span> <strong id="breadcrumb-page">Track time</strong></span><button id="theme-toggle" class="icon-button" aria-label="Switch to dark theme" title="Switch theme"><svg><use href="#i-moon"/></svg></button></div>
+      <div id="running-banner" class="running-banner" hidden><span class="status-dot"></span><span id="running-description"></span><strong id="running-elapsed">00:00:00</strong><button class="text-button" id="show-running">Go to timer</button></div>
+      <section id="page-today" class="page" aria-labelledby="today-heading">
+        <div class="page-heading"><div><p class="eyebrow" id="today-date">YOUR DAY, AT A GLANCE</p><h1 id="today-heading">One project. One moment<span>.</span></h1><p>Choose a user and project, then let the clock do its thing.</p></div><span class="badge"><i class="status-dot"></i>All local. All yours.</span></div>
+        <div class="tracking-grid">
+          <article class="timer-card tracking-card">
+            <div class="card-label"><span class="small-icon"><svg><use href="#i-clock"/></svg></span>YOUR FOCUS SPACE<span id="timer-state" class="outline-tag">Ready</span></div>
+            <form id="timer-form">
+              <div class="selection-grid">
+                <label>User<select id="user-select" required aria-label="User"><option value="">Choose a user</option></select></label>
+                <label>Project<select id="project-select" required aria-label="Project"><option value="">Choose a project</option></select></label>
+              </div>
+              <div id="timer-display" class="timer-display" role="timer" aria-label="Elapsed time">00:00:00</div>
+              <p id="timer-caption" class="timer-caption">Add a user and a project to get started.</p>
+              <label class="notes-label" for="timer-notes">Session notes <span>optional · up to 255 characters</span></label>
+              <textarea id="timer-notes" maxlength="255" rows="2" placeholder="What are you working on?"></textarea>
+              <div class="timer-actions"><button id="timer-button" class="button primary" type="submit" disabled>Start timer</button><button id="save-running-notes" class="button secondary" type="button" hidden>Save notes</button><span id="notes-status" class="muted-label" role="status"></span></div>
+            </form>
+            <div class="timer-card-footer"><span>Closing the app keeps your timer running.</span><button class="text-button" data-go="users">Manage users</button></div>
+          </article>
+          <aside class="project-summary activity-card">
+            <p class="eyebrow">SELECTED PROJECT</p><h2 id="summary-name">A place for your work</h2><p id="summary-user" class="summary-user">Choose a user and project.</p>
+            <div class="summary-total"><span>Completed time</span><strong id="project-total">00:00:00</strong><small>Sum of saved clock-in / clock-out pairs</small></div>
+            <div id="project-live-row" class="summary-live" hidden><span>Running session</span><strong id="project-live">00:00:00</strong></div>
+            <div class="summary-count"><span>Time entries</span><strong id="entry-count">0</strong></div>
+            <button class="button secondary full-width" data-go="projects">Manage projects</button>
+          </aside>
+        </div>
+        <article class="activity-card entries-card"><div class="section-heading"><h2>Project time entries</h2><span class="muted-label">Newest start first</span></div><div id="entries-list"></div></article>
+        <footer class="page-footer"><span><svg><use href="#i-shield"/></svg><span id="storage-status" role="status">Connecting to local storage…</span></span><span>One running timer at a time.</span></footer>
+      </section>
+      <section id="page-users" class="page" aria-labelledby="users-heading" hidden>
+        <div class="page-heading"><div><p class="eyebrow">THE PEOPLE BEHIND THE WORK</p><h1 id="users-heading">Users<span>.</span></h1><p>Local profiles, each with their own projects and time entries.</p></div></div>
+        <form id="add-user-form" class="manager-form activity-card"><label for="user-name">Add a user<input id="user-name" name="name" maxlength="100" required placeholder="User name" /></label><button class="button primary" type="submit">Add user</button></form>
+        <div class="activity-card manager-list" id="users-list"></div>
+        <p class="settings-footnote">Deleting a user permanently removes all of their projects and time entries, including a running timer.</p>
+      </section>
+      <section id="page-projects" class="page" aria-labelledby="projects-heading" hidden>
+        <div class="page-heading"><div><p class="eyebrow">A HOME FOR YOUR WORK</p><h1 id="projects-heading">Projects<span>.</span></h1><p>Keep each user's work in its own place.</p></div></div>
+        <div class="manager-user"><label for="manager-user-select">Projects for<select id="manager-user-select" aria-label="Projects for user"><option value="">Choose a user</option></select></label><button class="text-button" data-go="users">Manage users</button></div>
+        <form id="add-project-form" class="manager-form activity-card"><label for="project-name">Add a project<input id="project-name" name="name" maxlength="100" required placeholder="Project name" /></label><button id="add-project-button" class="button primary" type="submit" disabled>Add project</button></form>
+        <div class="activity-card manager-list" id="projects-list"></div>
+        <p class="settings-footnote">Completed totals include saved pairs only. Deleting a project permanently removes all of its time entries.</p>
+      </section>
+      <section id="page-settings" class="page" aria-labelledby="settings-heading" hidden>
+        <div class="page-heading"><div><p class="eyebrow">MAKE YOURSELF AT HOME</p><h1 id="settings-heading">Settings<span>.</span></h1><p>A few little details to make this space yours.</p></div></div>
+        <article class="settings-card"><div class="setting-row"><div><h2>Appearance</h2><p>Choose the light that suits your day.</p></div><div class="theme-options" role="group" aria-label="Appearance"><button data-theme-choice="light" aria-pressed="true"><svg><use href="#i-sun"/></svg>Light</button><button data-theme-choice="dark" aria-pressed="false"><svg><use href="#i-moon"/></svg>Dark</button></div></div><div class="setting-row"><div><h2>Local storage</h2><p>Users, projects, time entries, and preferences stay in a local SQLite database.</p><code id="database-path">Connecting…</code></div><span id="database-badge" class="badge">Connecting</span></div><div class="setting-row"><div><h2>Time Tracker</h2><p>Desktop app · Windows, macOS &amp; Linux</p></div><span id="app-version" class="version-label">v0.2.0</span></div></article>
+        <p class="settings-footnote">Timers continue from their original start time when you reopen the app. Stop a timer to save its clock-out time.</p>
+      </section>
+    </main>
+  </div>
+  <dialog id="action-dialog" aria-labelledby="dialog-title" aria-describedby="dialog-description"><form id="dialog-form"><h2 id="dialog-title"></h2><p id="dialog-description"></p><label id="dialog-label" for="dialog-value" hidden><span id="dialog-field-name"></span><textarea id="dialog-value" rows="3"></textarea></label><p id="dialog-error" class="form-error" role="alert" hidden></p><div class="dialog-actions"><button id="dialog-cancel" class="button secondary" type="button">Cancel</button><button id="dialog-confirm" class="button primary" type="submit">Save</button></div></form></dialog>
+  <div id="toast" class="toast" role="status" hidden></div>
+</body>
+</html>
