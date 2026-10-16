@@ -81,7 +81,7 @@ git diff --cached
 git commit -m "Describe the change"
 ```
 
-The private GitHub backup is [bryancolvinfilm-bot/time-tracker](https://github.com/bryancolvinfilm-bot/time-tracker). The `origin` remote uses `https://github.com/bryancolvinfilm-bot/time-tracker.git`, and local `main` tracks `origin/main`. Upload new commits with:
+The public GitHub repository is [bryancolvinfilm-bot/time-tracker](https://github.com/bryancolvinfilm-bot/time-tracker). The `origin` remote uses `https://github.com/bryancolvinfilm-bot/time-tracker.git`, and local `main` tracks `origin/main`. Upload new commits with:
 
 ```sh
 git push
@@ -90,6 +90,14 @@ git push
 Git Credential Manager handles GitHub sign-in. Do not place a password or token in the remote URL or project files. A local commit saves version history on this machine; pushing backs those commits up to GitHub. Use `git status --short --branch` to see whether local commits are ahead of the last fetched remote state.
 
 Git tracks source code, tests, icons, configuration, and project documentation. `.gitignore` excludes dependencies, downloaded tools, generated builds, test outputs, local SQLite files, and `.env` secrets. The live SQLite database in AppData is separate from the Git repository and needs its own backup if desired.
+
+## Sharing, license, and repository access
+
+Time Tracker is available under the [MIT license](LICENSE), copyright 2026 Bryan Colvin. You may use the code and make your own variants under that license, including retaining its copyright and permission notice.
+
+This repository is maintained by its owner and is not accepting outside code contributions. Public visibility allows people to view, clone, and fork it; it does not give them permission to push or merge changes here. Only the owner account has write access. A pull request is a proposal and cannot change this repository unless the owner merges it. Do not grant collaborators write access without the owner's explicit instruction.
+
+The `private: true` field in `package.json` prevents accidental npm publishing; it does not control GitHub visibility.
 
 ## Storage and architecture
 

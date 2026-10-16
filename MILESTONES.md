@@ -1,5 +1,13 @@
 # Time Tracker milestones
 
+## 2026-10-16: public sharing with owner-only write access
+
+- Changed only `bryancolvinfilm-bot/time-tracker` from private to public at the user's request. Other repositories were not changed.
+- Verified through the GitHub API that the owner account is the only collaborator with write access, with no pending collaborator invitations and no deploy keys.
+- Added the user-approved MIT license, copyright 2026 Bryan Colvin, and updated the root package metadata to match. Kept npm's accidental-publishing guard, `private: true`.
+- Documented that people may view, clone, and fork the project and make their own variants, while the original repository does not accept outside code contributions. Public access does not grant push or merge access.
+- Confirmed the previous startup-window work was already committed and pushed as `5eb2490` before making the visibility change. The local SQLite database and generated Windows EXEs remain outside Git history.
+
 ## 2026-10-16: version 0.4.1 portable startup feedback
 
 ### Implemented
