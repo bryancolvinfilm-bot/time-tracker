@@ -1,6 +1,7 @@
 node_modules/
 release/
 .tools/
+build/icon.icns
 test-results/
 playwright-report/
 *.sqlite

@@ -1,7 +1,7 @@
 {
   "name": "time-tracker",
   "productName": "Time Tracker",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "A quiet, local-first home for your time.",
   "homepage": "https://github.com/bryancolvinfilm-bot/time-tracker",
   "private": true,
@@ -11,7 +11,7 @@
   "scripts": {
     "start": "electron .",
     "dev": "electron .",
-    "check": "node --check electron/main.cjs && node --check electron/preload.cjs && node --check electron/storage.cjs && node --check src/time-utils.js && node --check src/app.js && node --check scripts/portable-startup.cjs && node --check scripts/test-portable.cjs",
+    "check": "node --check electron/main.cjs && node --check electron/preload.cjs && node --check electron/storage.cjs && node --check src/time-utils.js && node --check src/app.js && node --check scripts/portable-startup.cjs && node --check scripts/test-portable.cjs && node --check scripts/check-mac-icon.cjs",
     "test": "npm run test:storage && npm run test:time && npm run test:desktop",
     "test:storage": "node --test tests/storage.test.cjs",
     "test:time": "node --test tests/time.test.cjs",
@@ -21,7 +21,7 @@
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
     "dist:win": "electron-builder --win",
-    "dist:mac": "electron-builder --mac",
+    "dist:mac": "bash scripts/prepare-mac-icon.sh && electron-builder --mac",
     "dist:linux": "electron-builder --linux"
   },
   "devDependencies": {
@@ -64,7 +64,7 @@
         "zip"
       ],
       "category": "public.app-category.productivity",
-      "icon": "src/assets/icon.png"
+      "icon": "build/icon.icns"
     },
     "linux": {
       "maintainer": "Bryan Colvin <bryancolvinfilm-bot@users.noreply.github.com>",
