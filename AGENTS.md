@@ -31,6 +31,7 @@ The user explicitly wants successive builds and versions to connect to the same 
 ## Implementation and verification
 
 - This project is a local Git repository on `main`. Inspect `git status --short --branch` and `git diff` before editing; preserve any existing uncommitted work. Use `git log --oneline -10` to review recent commits and `git remote -v` to check the actual remote configuration.
+- The private GitHub repository is `bryancolvinfilm-bot/time-tracker`. `origin` is `https://github.com/bryancolvinfilm-bot/time-tracker.git`, and `main` tracks `origin/main`. Verify the actual configuration and distinguish local commits from successfully pushed backups.
 - Git for Windows is installed at `C:\Program Files\Git\cmd\git.exe`. If the current automation process has an old PATH, invoke that executable directly or prepend its directory for that command. New terminals inherit the installed PATH entry.
 - For requested commits, stage intended source/documentation files, inspect the staged diff, and keep ignored dependencies, builds, test data, runtime databases, and credentials out of history. Use Git Credential Manager for authentication; do not write tokens into files or remote URLs.
 

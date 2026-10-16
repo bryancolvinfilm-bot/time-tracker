@@ -1,13 +1,16 @@
 # Time Tracker milestones
 
-## 2026-10-16: local Git setup
+## 2026-10-16: Git setup and private GitHub backup
 
 - Installed Git for Windows 2.55.0.windows.5 through Windows Package Manager, with Git Credential Manager 2.9.1.
 - Confirmed commit identity: Bryan Colvin (`bryancolvinfilm@gmail.com`). New repositories default to `main`.
 - Initialized this project as a local repository on `main` for the version 0.2.0 baseline and project documentation.
 - Added `.gitattributes` for consistent source line endings and expanded `.gitignore` to exclude local environment secrets and SQLite journal files.
 - Added everyday status, diff, log, commit, and remote setup instructions to README and agent instructions.
-- Remote backup is not connected yet. Check `git remote -v` and the actual upstream status before claiming work has been pushed to GitHub.
+- Created the private repository [bryancolvinfilm-bot/time-tracker](https://github.com/bryancolvinfilm-bot/time-tracker) after the user's GitHub browser sign-in.
+- Connected `origin` at `https://github.com/bryancolvinfilm-bot/time-tracker.git`; local `main` tracks `origin/main`.
+- Created and pushed baseline commit `36637ce` (`Build Time Tracker 0.2.0 with persistent local time tracking`). Verified that remote `main` matched the full local commit hash after that push.
+- Repository integrity checks passed; only intended source, tests, assets, configuration, and documentation were tracked. Check `git status`, `git remote -v`, and actual push results when reporting future backup status.
 - Git covers project source/history. The live database remains in AppData and is not included in Git backups.
 
 ## 2026-10-16: persistent data across application versions

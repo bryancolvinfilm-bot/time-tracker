@@ -63,14 +63,13 @@ git diff --cached
 git commit -m "Describe the change"
 ```
 
-Once a GitHub repository is connected, use `git push` to upload committed work. For the first connection, replace `YOUR-USERNAME` with the GitHub account name:
+The private GitHub backup is [bryancolvinfilm-bot/time-tracker](https://github.com/bryancolvinfilm-bot/time-tracker). The `origin` remote uses `https://github.com/bryancolvinfilm-bot/time-tracker.git`, and local `main` tracks `origin/main`. Upload new commits with:
 
 ```sh
-git remote add origin https://github.com/YOUR-USERNAME/time-tracker.git
-git push -u origin main
+git push
 ```
 
-Git Credential Manager handles GitHub sign-in. Do not place a password or token in the remote URL or project files. An initial local commit provides version history; an off-machine backup exists only after a successful push to a remote repository.
+Git Credential Manager handles GitHub sign-in. Do not place a password or token in the remote URL or project files. A local commit saves version history on this machine; pushing backs those commits up to GitHub. Use `git status --short --branch` to see whether local commits are ahead of the last fetched remote state.
 
 Git tracks source code, tests, icons, configuration, and project documentation. `.gitignore` excludes dependencies, downloaded tools, generated builds, test outputs, local SQLite files, and `.env` secrets. The live SQLite database in AppData is separate from the Git repository and needs its own backup if desired.
 
