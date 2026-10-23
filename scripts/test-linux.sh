@@ -32,4 +32,8 @@ if [[ "$wm_ready" != true ]]; then
   exit 1
 fi
 
-npm test
+if (( $# )); then
+  "$@"
+else
+  npm test
+fi

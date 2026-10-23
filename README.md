@@ -6,6 +6,18 @@ Version 0.4.3 supports local users, projects, persistent sessions, live weekly t
 
 Project instructions for future agents are in [AGENTS.md](AGENTS.md). Verified progress and the agreement to preserve the same database across versions are recorded in [MILESTONES.md](MILESTONES.md).
 
+## Download
+
+Installers and portable builds are published on [GitHub Releases](https://github.com/bryancolvinfilm-bot/time-tracker/releases/latest). No Node.js installation is needed to use them.
+
+| Platform | Download |
+| --- | --- |
+| Windows x64 | [Installer](https://github.com/bryancolvinfilm-bot/time-tracker/releases/latest/download/TimeTracker-0.4.3-windows-x64-setup.exe) · [Portable](https://github.com/bryancolvinfilm-bot/time-tracker/releases/latest/download/TimeTracker-0.4.3-windows-x64-portable.exe) |
+| Mac, Apple Silicon and Intel | [Universal DMG](https://github.com/bryancolvinfilm-bot/time-tracker/releases/latest/download/TimeTracker-0.4.3-macos-universal.dmg) · [App ZIP](https://github.com/bryancolvinfilm-bot/time-tracker/releases/latest/download/TimeTracker-0.4.3-macos-universal.zip) |
+| Linux x64 | [AppImage](https://github.com/bryancolvinfilm-bot/time-tracker/releases/latest/download/TimeTracker-0.4.3-linux-x64.AppImage) · [Debian / Ubuntu package](https://github.com/bryancolvinfilm-bot/time-tracker/releases/latest/download/TimeTracker-0.4.3-linux-x64.deb) |
+
+Each release includes source/build metadata and SHA-256 checksums. Windows packages are unsigned; Mac apps are ad-hoc signed without Apple notarization and may be blocked by macOS after downloading. See the Mac notes below. Upgrades reuse the existing local database.
+
 ## Use the app
 
 1. Open **Users**, enter a name, and choose **Add user**.
@@ -39,7 +51,7 @@ The startup customization lives in `build/portable-startup.nsh` and the in-memor
 
 ## Mac development builds
 
-The GitHub Mac build targets Apple Silicon (M1 and later). Extract the workflow artifact ZIP, mount the DMG, and drag Time Tracker into Applications. Version 0.4.2 explicitly signs the app and its helpers with an ad-hoc development signature, preserving signature integrity after packaging. `npm run test:mac` verifies signatures in both the DMG and app ZIP and runs desktop integration tests on an app copied from the DMG.
+The GitHub Mac release is universal, containing Apple Silicon (M1 and later) and Intel binaries. Download the DMG from Releases, mount it, and drag Time Tracker into Applications. Version 0.4.2 explicitly signs the app and its helpers with an ad-hoc development signature, preserving signature integrity after packaging. `npm run test:mac` verifies both architectures and signatures in the DMG and app ZIP and runs desktop integration tests on an app copied from the DMG, using the runner's native architecture.
 
 Version 0.4.3 generates the Mac icon using Apple's native `sips` and `iconutil` tools. This replaces the pinned converter's malformed small Finder icon entries and incorrect Retina frame size. The generated `build/icon.icns` is ignored by Git and rebuilt by `npm run dist:mac`. The package checks also inspect the actual ICNS entries and ask Apple's tools to decode the packaged icon.
 
@@ -153,6 +165,6 @@ npm run dist:linux  # Linux AppImage and DEB
 
 Artifacts are written to `release/`. Users do not need Node.js or npm installed. Windows version 0.4.3 files are `Time Tracker Setup 0.4.3.exe` (installer) and `Time Tracker 0.4.3.exe` (portable launcher).
 
-One source codebase produces separate applications for each operating system. Build on the target OS for predictable results. The workflow in `.github/workflows/build.yml` uses Windows, macOS, and Linux runners, tests the app, and uploads builds. Run it manually after pushing this project to GitHub, or push a `v*` tag. The workflow builds the architecture of its runner; it does not yet produce every CPU architecture.
+One source codebase produces separate applications for each operating system. Build on the target OS for predictable results. The workflow in `.github/workflows/build.yml` uses Windows, macOS, and Linux runners and tests both source and packaged apps. Release builds target Windows x64, universal macOS, and Linux x64. For a local universal Mac build, run `npm run dist:mac -- --universal`.
 
-Builds are currently unsigned. Signing and macOS notarization can be configured for public distribution. The CI workflow does not publish releases automatically. Advanced reports, manual timestamp editing, and exports are outside this version.
+Follow [publish.md](publish.md) to publish. A manual workflow dispatch specifies the full expected source SHA and explicitly enables publication. Only after all platform checks pass does it upload a draft, verify all eight assets, publish the release, and verify anonymous downloads. A normal build or tag push does not publish a release. Windows builds are unsigned and Mac builds use ad-hoc signing; trusted platform signing and Mac notarization are not configured. Advanced reports, manual timestamp editing, and exports are outside this version.

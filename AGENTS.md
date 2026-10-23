@@ -2,6 +2,8 @@
 
 Read [README.md](README.md) for usage and architecture and [MILESTONES.md](MILESTONES.md) for the last verified milestone. Keep this file focused on ongoing requirements; record completed work in the milestone log.
 
+For requests to build and publish platform installers, follow [publish.md](publish.md) through native build completion and verification of the public downloads. A source-only push does not authorize a release. Mac release bundles are universal; keep both architecture checks in `scripts/test-mac.sh`.
+
 ## Preserve the user's local data across versions
 
 The user explicitly wants successive builds and versions to connect to the same local dataset. This is a product requirement.

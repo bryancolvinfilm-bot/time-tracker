@@ -1,5 +1,15 @@
 # Time Tracker milestones
 
+## 2026-10-22: version 0.4.3 public release preparation
+
+- Adapted Cult Copy's `publish.md` procedure for this Electron project. Added a reusable release guide and a manual workflow that requires the expected source SHA and an explicit publish option.
+- Kept Windows x64 installer/portable and Linux x64 AppImage/DEB outputs; changed Mac packaging to universal Apple Silicon/Intel DMG/ZIP bundles and added binary architecture checks.
+- Added packaged Windows desktop checks and Linux desktop checks using applications extracted from each distributable. Existing portable startup, Mac signatures/icon checks, renderer isolation, and isolated database tests remain enabled.
+- Added six-package completeness validation, source/build metadata, SHA-256 checksums, draft-upload verification, and anonymous public-download verification. Existing releases and version tags are never overwritten.
+- Local JavaScript/Bash syntax, workflow YAML, package/lockfile version consistency, and diff checks passed. All 22 local tests passed: 8 storage, 6 time, 3 release-manifest, and 5 Electron desktop tests. Desktop tests ran outside the restricted automation sandbox with the app's renderer sandbox retained.
+- Native cloud builds and actual public release verification are pending at this preparation commit. Windows remains unsigned; Mac remains ad-hoc signed without notarization. No claim is made that the previous M1 launch report is resolved.
+- Application identity, database location, schema, and tracking behavior remain unchanged.
+
 ## 2026-10-16: version 0.4.3 confirmed Mac Finder icon defect
 
 - The user reported that 0.4.2 still would not open on their M1 and that its Finder icon rendered as scrambled pixels, despite the icon looking correct in the DMG.

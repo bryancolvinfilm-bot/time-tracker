@@ -11,10 +11,11 @@
   "scripts": {
     "start": "electron .",
     "dev": "electron .",
-    "check": "node --check electron/main.cjs && node --check electron/preload.cjs && node --check electron/storage.cjs && node --check src/time-utils.js && node --check src/app.js && node --check scripts/portable-startup.cjs && node --check scripts/test-portable.cjs && node --check scripts/check-mac-icon.cjs",
-    "test": "npm run test:storage && npm run test:time && npm run test:desktop",
+    "check": "node --check electron/main.cjs && node --check electron/preload.cjs && node --check electron/storage.cjs && node --check src/time-utils.js && node --check src/app.js && node --check scripts/portable-startup.cjs && node --check scripts/test-portable.cjs && node --check scripts/check-mac-icon.cjs && node --check scripts/release.cjs",
+    "test": "npm run test:storage && npm run test:time && npm run test:release && npm run test:desktop",
     "test:storage": "node --test tests/storage.test.cjs",
     "test:time": "node --test tests/time.test.cjs",
+    "test:release": "node --test tests/release.test.cjs",
     "test:desktop": "playwright test",
     "test:portable": "node scripts/test-portable.cjs",
     "test:mac": "bash scripts/test-mac.sh",
@@ -60,8 +61,8 @@
       "entitlements": "build/entitlements.mac.plist",
       "entitlementsInherit": "build/entitlements.mac.plist",
       "target": [
-        "dmg",
-        "zip"
+        { "target": "dmg", "arch": ["universal"] },
+        { "target": "zip", "arch": ["universal"] }
       ],
       "category": "public.app-category.productivity",
       "icon": "build/icon.icns"

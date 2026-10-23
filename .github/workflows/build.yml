@@ -1,7 +1,16 @@
-name: Build desktop apps
+name: Build and release desktop apps
 
 on:
   workflow_dispatch:
+    inputs:
+      expected_sha:
+        description: Full main commit to build and verify
+        required: true
+        type: string
+      publish_release:
+        description: Publish verified packages as the latest GitHub Release
+        default: false
+        type: boolean
   push:
     tags: ['v*']
 
@@ -10,19 +19,32 @@ permissions:
 
 jobs:
   build:
+    timeout-minutes: 35
     strategy:
       fail-fast: false
       matrix:
         include:
           - os: windows-latest
             target: win
+            architecture: x64
           - os: macos-latest
             target: mac
+            architecture: universal
           - os: ubuntu-latest
             target: linux
+            architecture: x64
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+      - name: Verify requested source commit
+        shell: bash
+        env:
+          EXPECTED_SHA: ${{ inputs.expected_sha }}
+        run: |
+          if [[ -n "$EXPECTED_SHA" && "$EXPECTED_SHA" != "$GITHUB_SHA" ]]; then
+            echo 'The requested source commit does not match this checkout.' >&2
+            exit 1
+          fi
       - uses: actions/setup-node@v4
         with:
           node-version: 24
@@ -41,15 +63,23 @@ jobs:
         if: runner.os == 'Linux'
         run: xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" bash scripts/test-linux.sh
       - name: Package app
-        run: npm run dist:${{ matrix.target }} -- --publish never
+        run: npm run dist:${{ matrix.target }} -- --${{ matrix.architecture }} --publish never
         env:
           CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+      - name: Verify packaged Windows app
+        if: runner.os == 'Windows'
+        run: npm run test:desktop
+        env:
+          TIME_TRACKER_EXECUTABLE: ${{ github.workspace }}/release/win-unpacked/Time Tracker.exe
       - name: Verify Windows portable startup
         if: runner.os == 'Windows'
         run: npm run test:portable
       - name: Verify Mac package signatures and installed app
         if: runner.os == 'macOS'
         run: npm run test:mac
+      - name: Verify Linux packages
+        if: runner.os == 'Linux'
+        run: bash scripts/test-linux-packages.sh
       - uses: actions/upload-artifact@v4
         with:
           name: Time-Tracker-${{ matrix.target }}
@@ -60,3 +90,29 @@ jobs:
             release/*.AppImage
             release/*.deb
           if-no-files-found: error
+
+  publish:
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_release && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    concurrency:
+      group: publish-time-tracker
+      cancel-in-progress: false
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: Time-Tracker-*
+          merge-multiple: true
+          path: release/downloads
+      - name: Upload draft, verify every asset, and publish
+        run: node scripts/release.cjs publish release/downloads
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPECTED_SHA: ${{ inputs.expected_sha }}
