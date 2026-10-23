@@ -38,8 +38,8 @@ for source in dmg zip; do
   app_path="$test_dir/$source/Time Tracker.app"
   codesign --verify --deep --strict --verbose=2 "$app_path"
   codesign --display --verbose=4 "$app_path"
-  lipo -verify_arch x86_64 arm64 "$app_path/Contents/MacOS/Time Tracker"
-  lipo -verify_arch x86_64 arm64 "$app_path/Contents/Frameworks/Electron Framework.framework/Versions/A/Electron Framework"
+  lipo "$app_path/Contents/MacOS/Time Tracker" -verify_arch x86_64 arm64
+  lipo "$app_path/Contents/Frameworks/Electron Framework.framework/Versions/A/Electron Framework" -verify_arch x86_64 arm64
   node scripts/check-mac-icon.cjs "$app_path/Contents/Resources/icon.icns"
   iconutil --convert iconset --output "$test_dir/$source/decoded.iconset" "$app_path/Contents/Resources/icon.icns"
   test "$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$app_path/Contents/Info.plist")" = app.timetracker.desktop
