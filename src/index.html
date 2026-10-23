@@ -82,7 +82,7 @@
       </section>
       <section id="page-settings" class="page" aria-labelledby="settings-heading" hidden>
         <div class="page-heading"><div><p class="eyebrow">MAKE YOURSELF AT HOME</p><h1 id="settings-heading">Settings<span>.</span></h1><p>A few little details to make this space yours.</p></div></div>
-        <article class="settings-card"><div class="setting-row"><div><h2>Appearance</h2><p>Choose the light that suits your day.</p></div><div class="theme-options" role="group" aria-label="Appearance"><button data-theme-choice="light" aria-pressed="true"><svg><use href="#i-sun"/></svg>Light</button><button data-theme-choice="dark" aria-pressed="false"><svg><use href="#i-moon"/></svg>Dark</button></div></div><div class="setting-row"><div><h2>Local storage</h2><p>Users, projects, time entries, and preferences stay in a local SQLite database.</p><code id="database-path">Connecting…</code></div><span id="database-badge" class="badge">Connecting</span></div><div class="setting-row"><div><h2>Time Tracker</h2><p>Desktop app · Windows, macOS &amp; Linux</p></div><span id="app-version" class="version-label">v0.4.3</span></div></article>
+        <article class="settings-card"><div class="setting-row"><div><h2>Appearance</h2><p>Choose the light that suits your day.</p></div><div class="theme-options" role="group" aria-label="Appearance"><button data-theme-choice="light" aria-pressed="true"><svg><use href="#i-sun"/></svg>Light</button><button data-theme-choice="dark" aria-pressed="false"><svg><use href="#i-moon"/></svg>Dark</button></div></div><div class="setting-row"><div><h2>Local storage</h2><p>Users, projects, time entries, and preferences stay in a local SQLite database.</p><code id="database-path">Connecting…</code></div><span id="database-badge" class="badge">Connecting</span></div><div class="setting-row"><div><h2>Time Tracker</h2><p>Desktop app · Windows, macOS &amp; Linux</p></div><span id="app-version" class="version-label">v0.4.4</span></div></article>
         <p class="settings-footnote">Timers continue from their original start time when you reopen the app. Stop a timer to save its clock-out time.</p>
       </section>
     </main>
@@ -98,6 +98,19 @@
     <footer class="mini-footer"><span>This week <strong id="mini-week-total">00:00:00</strong></span><span id="mini-notes-status" role="status">Saved on your device</span></footer>
   </section>
   <dialog id="action-dialog" aria-labelledby="dialog-title" aria-describedby="dialog-description"><form id="dialog-form"><h2 id="dialog-title"></h2><p id="dialog-description"></p><label id="dialog-label" for="dialog-value" hidden><span id="dialog-field-name"></span><textarea id="dialog-value" rows="3"></textarea></label><p id="dialog-error" class="form-error" role="alert" hidden></p><div class="dialog-actions"><button id="dialog-cancel" class="button secondary" type="button">Cancel</button><button id="dialog-confirm" class="button primary" type="submit">Save</button></div></form></dialog>
+  <dialog id="session-dialog" aria-labelledby="session-title" aria-describedby="session-description">
+    <form id="session-form" novalidate>
+      <h2 id="session-title">Edit session</h2>
+      <p id="session-description">Edit this stopped session. Times use your computer's local timezone. Project choices belong to this session's user.</p>
+      <label for="session-project">Project<select id="session-project" required></select></label>
+      <label for="session-clock-in">Clock in<input id="session-clock-in" type="datetime-local" step="0.001" required /></label>
+      <label for="session-clock-out">Clock out<input id="session-clock-out" type="datetime-local" step="0.001" required /></label>
+      <label for="session-duration">Duration<input id="session-duration" type="text" placeholder="HH:MM:SS" aria-describedby="session-duration-help" required /></label>
+      <p id="session-duration-help" class="field-help">Hours:minutes:seconds (for example, 01:30:00). Hours can exceed 24. Changing duration adjusts clock-out; changing either time recalculates duration.</p>
+      <p id="session-error" class="form-error" role="alert" hidden></p>
+      <div class="dialog-actions"><button id="session-cancel" class="button secondary" type="button">Cancel</button><button id="session-save" class="button primary" type="submit">Save session</button></div>
+    </form>
+  </dialog>
   <div id="toast" class="toast" role="status" hidden></div>
 </body>
 </html>

@@ -188,3 +188,82 @@ test('a session survives process exit without an explicit database close', (t) =
     assert.equal(state.entries[0].notes, 'Survives exit');
   } finally { storage.close(); }
 });
+
+test('stopped session edits persist exact times and duration while preserving identity, notes, and running work', (t) => {
+  let now = 1_800_000_000_123;
+  t.mock.method(Date, 'now', () => now);
+  const f = fixture(t);
+  const user = addUser(f.storage);
+  const project = addProject(f.storage, user);
+  const id = start(f.storage, user, project, 'Keep these notes');
+  now += 60_000;
+  f.storage.mutate('timer:stop', { id, notes: 'Keep these notes' });
+  const runningId = start(f.storage, user, project, 'Still running');
+  const running = { ...f.storage.snapshot().entries.find(entry => entry.id === runningId) };
+  const clockIn = now - 5_400_456;
+  let state = f.storage.mutate('entry:update', { id, projectId: project, clockIn, clockOut: clockIn + 3_600_789 });
+  assert.equal(state.projects[0].total_ms, 3_600_789);
+  // Durations may span days and retain millisecond precision; only clock-out changes.
+  const durationMs = 100 * 3_600_000 + 12_345;
+  state = f.storage.mutate('entry:update', { id, projectId: project, clockIn, durationMs });
+  assert.equal(state.projects[0].total_ms, durationMs);
+  const reopened = f.reopen().snapshot();
+  assert.deepEqual({ ...reopened.entries.find(entry => entry.id === id) }, {
+    id, project_id: project, clock_in: clockIn, clock_out: clockIn + durationMs, notes: 'Keep these notes',
+  });
+  assert.deepEqual({ ...reopened.entries.find(entry => entry.id === runningId) }, running);
+  f.storage.mutate('entry:update', { id, projectId: project, clockIn, durationMs: 0 });
+  assert.equal(f.storage.snapshot().entries.find(entry => entry.id === id).clock_out, clockIn);
+});
+
+test('a stopped session moves only between its owner\'s projects and transfers totals and counts', (t) => {
+  let now = 1_800_000_000_000;
+  t.mock.method(Date, 'now', () => now);
+  const f = fixture(t);
+  const alice = addUser(f.storage);
+  const source = addProject(f.storage, alice, 'Source');
+  const target = addProject(f.storage, alice, 'Correct project');
+  const bob = addUser(f.storage, 'Bob');
+  const foreign = addProject(f.storage, bob, 'Correct project');
+  const id = start(f.storage, alice, source, 'Original notes');
+  const clockIn = now;
+  now += 90_000;
+  f.storage.mutate('timer:stop', { id, notes: 'Original notes' });
+  const before = f.storage.snapshot();
+  assert.throws(() => f.storage.mutate('entry:update', { id, userId: bob, projectId: foreign, clockIn: now, durationMs: 1 }), /belonging to this session's user/);
+  assert.deepEqual(f.storage.snapshot(), before);
+  f.storage.mutate('entry:update', { id, projectId: target, clockIn, clockOut: now });
+  const state = f.reopen().snapshot();
+  const totals = projectId => state.projects.find(project => project.id === projectId);
+  assert.equal(totals(source).total_ms, 0);
+  assert.equal(totals(source).entry_count, 0);
+  assert.equal(totals(target).total_ms, 90_000);
+  assert.equal(totals(target).entry_count, 1);
+  assert.equal(totals(foreign).total_ms, 0);
+  assert.deepEqual({ ...state.entries[0] }, { id, project_id: target, clock_in: clockIn, clock_out: now, notes: 'Original notes' });
+});
+
+test('session edits reject running entries, invalid dates and durations, and reversed times atomically', (t) => {
+  const f = fixture(t);
+  const user = addUser(f.storage);
+  const project = addProject(f.storage, user);
+  const id = start(f.storage, user, project, 'Preserve me');
+  const input = { id, projectId: project, clockIn: Date.now(), clockOut: Date.now() + 1000 };
+  assert.throws(() => f.storage.mutate('entry:update', input), /Stop this timer/);
+  f.storage.mutate('timer:stop', { id, notes: 'Preserve me' });
+  const before = f.storage.snapshot();
+  for (const patch of [
+    { clockIn: null }, { clockIn: '123' }, { clockIn: 0.5 }, { clockIn: NaN },
+    { clockOut: null }, { clockOut: Infinity }, { clockOut: 8_640_000_000_000_001 },
+    { clockOut: input.clockIn - 1 }, { projectId: 'missing' },
+  ]) {
+    assert.throws(() => f.storage.mutate('entry:update', { ...input, ...patch }));
+    assert.deepEqual(f.storage.snapshot(), before);
+  }
+  for (const durationMs of [-1, 1.1, '1000', null, NaN, Infinity, Number.MAX_SAFE_INTEGER]) {
+    assert.throws(() => f.storage.mutate('entry:update', { id, projectId: project, clockIn: input.clockIn, durationMs }));
+    assert.deepEqual(f.storage.snapshot(), before);
+  }
+  assert.throws(() => f.storage.mutate('entry:update', { ...input, durationMs: 1000 }), /without a separate clock-out/);
+  assert.deepEqual(f.reopen().snapshot(), before);
+});

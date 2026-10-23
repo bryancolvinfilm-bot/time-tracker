@@ -1,5 +1,19 @@
 # Time Tracker milestones
 
+## 2026-10-23: version 0.4.4 release preparation
+
+- Prepared stopped-session time/duration corrections and owner-scoped project moves for all six platform packages. Updated package/lockfile version, Settings fallback, download links, and release notes to 0.4.4. The existing 0.4.3 release and tag remain intact.
+- Reinstalled the locked dependencies with Node 24 using `npm ci`. `npm run check` and all 27 local source tests passed (11 storage, 6 time, 3 release-manifest, 7 Electron desktop). Desktop tests retained the renderer sandbox and used isolated temporary databases outside the restricted Windows automation sandbox.
+- Native Windows, universal Mac, and Linux builds, packaged-app tests, publication, and public-download verification are pending at this preparation commit. App identity, database path, and schema version 2 remain unchanged.
+
+## 2026-10-23: stopped-session corrections in source (unreleased, version 0.4.3)
+
+- Added **Edit session** to stopped entries, with editable local clock-in/clock-out timestamps, duration, and project. Changing duration computes clock-out from clock-in; changing either timestamp recalculates duration. Supports zero duration, durations beyond 24 hours, and exact millisecond preservation. Rejects invalid dates/durations and clock-out before clock-in.
+- Project choices are restricted to the entry owner's projects. Transactional storage validation independently rejects cross-user moves, including requests with a spoofed user ID. Transfers update entry counts and all-time/current-week totals while preserving the session ID and notes. Running entries must be stopped before editing; other running sessions remain intact.
+- Preserved exact timestamps when saving an unchanged repeated daylight-saving hour, retained computed clock-out through subsequent edits across that repeated hour, and rejected nonexistent local spring-forward times. Cancel discards edits; Save persists them across reopening.
+- `npm run check`, `git diff --check`, and all 27 source tests passed: 11 storage, 6 time, 3 release-manifest, and 7 real Electron desktop tests. Desktop tests passed outside the restricted Windows automation sandbox with Electron's renderer sandbox retained; the initial restricted launch timed out. Inspected light and dark/narrow editor screenshots, with no dialog overflow.
+- Application identity, production database path, schema version 2, existing records, and running-session recovery are unchanged. Tests used isolated temporary databases. Package version remains 0.4.3; no installer was built, no release was published, and no commit or push was requested. Native Mac/Linux verification and packaging of this feature remain outstanding.
+
 ## 2026-10-22: version 0.4.3 published for Windows, Mac, and Linux
 
 - Published [Time Tracker 0.4.3](https://github.com/bryancolvinfilm-bot/time-tracker/releases/tag/v0.4.3) as the latest public GitHub Release, with immutable version tag `v0.4.3` pointing to source commit `74efc5c127192ef0cb1a3cf7df00cfefee0ba693`.

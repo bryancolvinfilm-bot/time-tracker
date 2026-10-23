@@ -113,6 +113,7 @@ async function publish(directory, sha) {
   const downloadRoot = `https://github.com/${repository}/releases/download/${tag}`;
   const body = [
     `Time Tracker ${version} is a local, offline desktop time tracker with users, projects, persistent timers, notes, weekly totals, light/dark themes, and a compact mini stopwatch.`,
+    '', 'New in this release: choose **Edit session** on a stopped timer to correct clock-in, clock-out, duration, or project. Duration edits adjust clock-out automatically. Sessions can move only between projects belonging to their original user; session codes and notes are preserved, and totals update immediately.',
     '', '| Platform | Download |', '| --- | --- |',
     ...targets.map(target => `| ${target.platform} | [${target.name}](${downloadRoot}/${target.name}) |`),
     '', 'Windows: use Setup to install, or portable to run without installation. macOS: mount the DMG and drag Time Tracker into Applications. Linux: use the AppImage or install the Debian package.',

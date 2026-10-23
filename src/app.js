@@ -12,6 +12,7 @@ let ready = false;
 let widgetWindow = { mini: false, alwaysOnTop: false };
 let windowBusy = false;
 let dialogAction;
+let sessionEditor;
 let toastTimeout;
 
 function element(tag, className, text) {
@@ -297,6 +298,7 @@ function renderEntries() {
     const actions = element('div', 'row-actions');
     actions.append(actionButton('Edit notes', 'entry:notes', entry.id));
     if (entry.clock_out !== null) {
+      actions.append(actionButton('Edit session', 'entry:update', entry.id));
       const reopen = actionButton('Remove clock-out', 'entry:reopen', entry.id);
       reopen.disabled = !!activeEntry();
       if (reopen.disabled) reopen.title = 'Stop the running timer before reopening an entry.';
@@ -426,6 +428,91 @@ $('#dialog-form').addEventListener('submit', async (event) => {
     $('#dialog-error').hidden = false;
   } finally { $('#dialog-confirm').disabled = false; }
 });
+
+function localDateTime(ms) {
+  const date = new Date(ms);
+  if (!Number.isFinite(date.getTime())) return '';
+  const pad = (value, width = 2) => String(value).padStart(width, '0');
+  return `${pad(date.getFullYear(), 4)}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}.${pad(date.getMilliseconds(), 3)}`;
+}
+function readSessionTime(selector, original) {
+  const value = $(selector).value;
+  const parts = /^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2})(?::(\d{2})(?:\.(\d{1,3}))?)?$/.exec(value);
+  if (!parts) return NaN;
+  const normalized = `${parts[1]}:${parts[2] ?? '00'}.${(parts[3] ?? '').padEnd(3, '0')}`;
+  // Preserve the exact timestamp, including the later occurrence of a repeated DST hour.
+  if (normalized === localDateTime(original)) return original;
+  const ms = new Date(value).getTime();
+  // A nonexistent local time during a spring DST jump must not silently change.
+  return normalized === localDateTime(ms) ? ms : NaN;
+}
+function editableDuration(ms) {
+  return duration(ms) + (ms % 1000 ? `.${String(ms % 1000).padStart(3, '0')}` : '');
+}
+function readSessionDuration() {
+  const parts = /^(\d+):([0-5]\d):([0-5]\d)(?:\.(\d{1,3}))?$/.exec($('#session-duration').value.trim());
+  if (!parts) return NaN;
+  const ms = (Number(parts[1]) * 3600 + Number(parts[2]) * 60 + Number(parts[3])) * 1000 + Number((parts[4] ?? '').padEnd(3, '0'));
+  return Number.isSafeInteger(ms) ? ms : NaN;
+}
+function syncSessionTimes(useDuration) {
+  if (!sessionEditor) return;
+  sessionEditor.useDuration = useDuration;
+  const clockIn = readSessionTime('#session-clock-in', sessionEditor.clockIn);
+  if (Number.isFinite(clockIn)) sessionEditor.clockIn = clockIn;
+  if (useDuration) {
+    const ms = readSessionDuration();
+    $('#session-clock-out').value = Number.isFinite(clockIn) && Number.isFinite(ms) ? localDateTime(clockIn + ms) : '';
+    if ($('#session-clock-out').value) sessionEditor.clockOut = clockIn + ms;
+  } else {
+    const clockOut = readSessionTime('#session-clock-out', sessionEditor.clockOut);
+    if (Number.isFinite(clockOut)) sessionEditor.clockOut = clockOut;
+    $('#session-duration').value = Number.isFinite(clockIn) && Number.isFinite(clockOut) && clockOut >= clockIn ? editableDuration(clockOut - clockIn) : '';
+  }
+}
+function showSessionEditor(entry) {
+  if (entry.clock_out === null) return;
+  sessionEditor = { entry, clockIn: entry.clock_in, clockOut: entry.clock_out, useDuration: false };
+  const project = workspace.projects.find((item) => item.id === entry.project_id);
+  populateSelect($('#session-project'), workspace.projects.filter((item) => item.user_id === project.user_id), entry.project_id, 'Choose a project');
+  $('#session-clock-in').value = localDateTime(entry.clock_in);
+  $('#session-clock-out').value = localDateTime(entry.clock_out);
+  $('#session-duration').value = editableDuration(entry.clock_out - entry.clock_in);
+  $('#session-error').hidden = true;
+  $('#session-dialog').showModal();
+  $('#session-project').focus();
+}
+$('#session-clock-in').addEventListener('input', () => syncSessionTimes(false));
+$('#session-clock-out').addEventListener('input', () => syncSessionTimes(false));
+$('#session-duration').addEventListener('input', () => syncSessionTimes(true));
+$('#session-cancel').addEventListener('click', () => $('#session-dialog').close());
+$('#session-dialog').addEventListener('close', () => { sessionEditor = null; });
+$('#session-form').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  if (busy || !sessionEditor) return;
+  $('#session-save').disabled = true;
+  try {
+    const { entry, useDuration } = sessionEditor;
+    const clockIn = readSessionTime('#session-clock-in', sessionEditor.clockIn);
+    if (!Number.isFinite(clockIn)) throw new Error('Enter a valid local clock-in date and time.');
+    const input = { id: entry.id, projectId: $('#session-project').value, clockIn };
+    if (!input.projectId) throw new Error('Choose a project for this session.');
+    if (useDuration) {
+      input.durationMs = readSessionDuration();
+      if (!Number.isFinite(input.durationMs)) throw new Error('Enter duration as hours:minutes:seconds, for example 01:30:00.');
+    } else {
+      input.clockOut = readSessionTime('#session-clock-out', sessionEditor.clockOut);
+      if (!Number.isFinite(input.clockOut)) throw new Error('Enter a valid local clock-out date and time.');
+    }
+    await run('entry:update', input);
+    $('#session-dialog').close();
+    const project = workspace.projects.find((item) => item.id === input.projectId);
+    notify(`Session saved to ${project.name}. Totals updated.`);
+  } catch (error) {
+    $('#session-error').textContent = error.message;
+    $('#session-error').hidden = false;
+  } finally { $('#session-save').disabled = false; }
+});
 document.addEventListener('click', attempt(async (event) => {
   const button = event.target.closest('[data-op]');
   if (!button || button.disabled || busy || !ready) return;
@@ -448,6 +535,8 @@ document.addEventListener('click', attempt(async (event) => {
   } else if (op === 'project:rename') {
     const project = workspace.projects.find((item) => item.id === id);
     showDialog({ title: 'Rename project', description: 'Time entries stay with this project.', field: 'Project name', value: project.name, maxLength: 100, action: (name) => run(op, { id, name }) });
+  } else if (op === 'entry:update') {
+    showSessionEditor(workspace.entries.find((item) => item.id === id));
   } else if (op === 'entry:notes') {
     const entry = workspace.entries.find((item) => item.id === id);
     showDialog({ title: 'Edit session notes', description: 'Up to 255 characters. Leave blank for no notes.', field: 'Notes', value: entry.notes, action: (notes) => run(op, { id, notes }) });

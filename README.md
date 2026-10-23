@@ -2,7 +2,7 @@
 
 A self-contained Electron desktop app with a local SQLite database. No server, account, network connection, or separately installed database is needed to run the packaged app.
 
-Version 0.4.3 supports local users, projects, persistent sessions, live weekly totals, a compact mini stopwatch window, and animated portable-startup feedback. Light and dark themes are included.
+Version 0.4.4 supports local users, projects, persistent sessions, editable stopped sessions, live weekly totals, a compact mini stopwatch window, and animated portable-startup feedback. Light and dark themes are included.
 
 Project instructions for future agents are in [AGENTS.md](AGENTS.md). Verified progress and the agreement to preserve the same database across versions are recorded in [MILESTONES.md](MILESTONES.md).
 
@@ -12,9 +12,9 @@ Installers and portable builds are published on [GitHub Releases](https://github
 
 | Platform | Download |
 | --- | --- |
-| Windows x64 | [Installer](https://github.com/bryancolvinfilm-bot/time-tracker/releases/latest/download/TimeTracker-0.4.3-windows-x64-setup.exe) · [Portable](https://github.com/bryancolvinfilm-bot/time-tracker/releases/latest/download/TimeTracker-0.4.3-windows-x64-portable.exe) |
-| Mac, Apple Silicon and Intel | [Universal DMG](https://github.com/bryancolvinfilm-bot/time-tracker/releases/latest/download/TimeTracker-0.4.3-macos-universal.dmg) · [App ZIP](https://github.com/bryancolvinfilm-bot/time-tracker/releases/latest/download/TimeTracker-0.4.3-macos-universal.zip) |
-| Linux x64 | [AppImage](https://github.com/bryancolvinfilm-bot/time-tracker/releases/latest/download/TimeTracker-0.4.3-linux-x64.AppImage) · [Debian / Ubuntu package](https://github.com/bryancolvinfilm-bot/time-tracker/releases/latest/download/TimeTracker-0.4.3-linux-x64.deb) |
+| Windows x64 | [Installer](https://github.com/bryancolvinfilm-bot/time-tracker/releases/latest/download/TimeTracker-0.4.4-windows-x64-setup.exe) · [Portable](https://github.com/bryancolvinfilm-bot/time-tracker/releases/latest/download/TimeTracker-0.4.4-windows-x64-portable.exe) |
+| Mac, Apple Silicon and Intel | [Universal DMG](https://github.com/bryancolvinfilm-bot/time-tracker/releases/latest/download/TimeTracker-0.4.4-macos-universal.dmg) · [App ZIP](https://github.com/bryancolvinfilm-bot/time-tracker/releases/latest/download/TimeTracker-0.4.4-macos-universal.zip) |
+| Linux x64 | [AppImage](https://github.com/bryancolvinfilm-bot/time-tracker/releases/latest/download/TimeTracker-0.4.4-linux-x64.AppImage) · [Debian / Ubuntu package](https://github.com/bryancolvinfilm-bot/time-tracker/releases/latest/download/TimeTracker-0.4.4-linux-x64.deb) |
 
 Each release includes source/build metadata and SHA-256 checksums. Windows packages are unsigned; Mac apps are ad-hoc signed without Apple notarization and may be blocked by macOS after downloading. See the Mac notes below. Upgrades reuse the existing local database.
 
@@ -33,6 +33,12 @@ Only one timer can run across the app. A running session is saved immediately wi
 
 Notes are optional and limited to 255 characters. Initial notes save with Start. For a running session, use **Save notes** or **Stop timer** to save changes. Use **Edit notes** on any entry to edit its saved notes.
 
+### Correct a stopped session
+
+After stopping a timer, choose **Edit session** on its time entry to correct the clock-in, clock-out, duration, or project. Times use your computer's local timezone. Enter duration as hours:minutes:seconds, for example `01:30:00`; hours can exceed 24, and optional fractional seconds preserve millisecond precision. Changing duration adjusts clock-out from clock-in. Changing either timestamp recalculates duration. Clock-out must be at or after clock-in; zero duration is allowed.
+
+The project selector lists only projects belonging to that session's user. Moving a session transfers its time and entry count to the chosen project, including the appropriate weekly total. The session code and notes stay the same. Save applies the changes; Cancel or Escape discards them. A running session must be stopped before its time or project can be edited.
+
 ## Mini mode
 
 Choose **Mini mode** in the upper-right toolbar to shrink the actual application window into an approximately 640 × 160 horizontal widget. It shows the current user and project, the live stopwatch, editable notes, Start/Stop, Save notes, and a small current-week total at the bottom.
@@ -43,7 +49,7 @@ Check **Always on top** to pin the widget above other windows. **Exit mini** res
 
 ## Portable Windows startup
 
-`Time Tracker 0.4.3.exe` is the portable launcher. It shows a small native status window with an animated activity bar while unpacking, changes the message to **Starting Time Tracker...**, and dismisses the window when the app is ready. The animation indicates activity rather than a completion percentage. Each launch uses its own temporary extraction folder and keeps the normal shared SQLite database in AppData.
+`Time Tracker 0.4.4.exe` is the portable launcher. It shows a small native status window with an animated activity bar while unpacking, changes the message to **Starting Time Tracker...**, and dismisses the window when the app is ready. The animation indicates activity rather than a completion percentage. Each launch uses its own temporary extraction folder and keeps the normal shared SQLite database in AppData.
 
 The Setup EXE installs the app once; launch the installed shortcut afterward to avoid repeated extraction. The directly launched `release/win-unpacked/Time Tracker.exe` also starts without unpacking.
 
@@ -61,6 +67,7 @@ These builds are not signed with an Apple Developer ID or notarized by Apple. A 
 
 - **Delete entry** removes the entire session: clock-in, any clock-out, and notes. Deleting a running session removes that timer.
 - **Remove clock-out** keeps the original clock-in, session code, and notes, and makes that session run again from its original start. Stop any other running timer first. Elapsed time includes the whole interval since the original clock-in and can overlap later saved sessions.
+- **Edit session** corrects a stopped session's timestamps, duration, or project without changing its session code or notes. Project changes stay within the original user's projects.
 - A clock-in cannot be deleted separately from its clock-out. The pair is one SQLite record.
 - Deleting a project deletes all of its sessions, including an active one.
 - Deleting a user deletes all of their projects and sessions, including an active one.
@@ -142,7 +149,7 @@ Run suites individually with `npm run test:storage`, `npm run test:time`, and `n
 
 For headless Linux desktop tests, install Xvfb, Openbox, and `x11-utils`, then run `xvfb-run --auto-servernum --server-args="-screen 0 1920x1080x24" bash scripts/test-linux.sh`. The script starts Openbox on the virtual display, waits for it to register, runs the full test suite, and stops its window manager afterward. Xvfb alone does not supply the window manager needed by the maximize/restore checks. GitHub Actions configures this environment automatically.
 
-Database tests cover migration, ownership, session codes, exact totals, validation, persistence without an explicit close, cascading deletes, and the single-timer constraint across connections. Time-calculation tests cover running sessions, week boundaries, Sunday rollover, year boundaries, and spring/fall daylight-saving changes. Electron integration tests exercise the real interface, SQLite database, live weekly summaries, dated clock stamps, mini window sizing and native pinning, normal/maximized restoration, shared notes, reopening with a running timer, project/user management, renderer isolation, narrow-window overflow, and theme persistence. All test data is isolated in temporary directories.
+Database tests cover migration, ownership, session codes, exact totals, validation, stopped-session corrections and project transfers, persistence without an explicit close, cascading deletes, and the single-timer constraint across connections. Time-calculation tests cover running sessions, week boundaries, Sunday rollover, year boundaries, and spring/fall daylight-saving changes. Electron integration tests exercise the real interface, SQLite database, session editing and owner-scoped project choices, editing across daylight-saving changes, live weekly summaries, dated clock stamps, mini window sizing and native pinning, normal/maximized restoration, shared notes, reopening with a running timer, project/user management, renderer isolation, narrow-window overflow, and theme persistence. All test data is isolated in temporary directories.
 
 To verify the built Windows application in PowerShell:
 
@@ -163,8 +170,8 @@ npm run dist:mac    # macOS DMG and ZIP
 npm run dist:linux  # Linux AppImage and DEB
 ```
 
-Artifacts are written to `release/`. Users do not need Node.js or npm installed. Windows version 0.4.3 files are `Time Tracker Setup 0.4.3.exe` (installer) and `Time Tracker 0.4.3.exe` (portable launcher).
+Artifacts are written to `release/`. Users do not need Node.js or npm installed. Windows version 0.4.4 files are `Time Tracker Setup 0.4.4.exe` (installer) and `Time Tracker 0.4.4.exe` (portable launcher).
 
 One source codebase produces separate applications for each operating system. Build on the target OS for predictable results. The workflow in `.github/workflows/build.yml` uses Windows, macOS, and Linux runners and tests both source and packaged apps. Release builds target Windows x64, universal macOS, and Linux x64. For a local universal Mac build, run `npm run dist:mac -- --universal`.
 
-Follow [publish.md](publish.md) to publish. A manual workflow dispatch specifies the full expected source SHA and explicitly enables publication. Only after all platform checks pass does it upload a draft, verify all eight assets, publish the release, and verify anonymous downloads. A normal build or tag push does not publish a release. Windows builds are unsigned and Mac builds use ad-hoc signing; trusted platform signing and Mac notarization are not configured. Advanced reports, manual timestamp editing, and exports are outside this version.
+Follow [publish.md](publish.md) to publish. A manual workflow dispatch specifies the full expected source SHA and explicitly enables publication. Only after all platform checks pass does it upload a draft, verify all eight assets, publish the release, and verify anonymous downloads. A normal build or tag push does not publish a release. Windows builds are unsigned and Mac builds use ad-hoc signing; trusted platform signing and Mac notarization are not configured. Advanced reports and exports remain outside this version.

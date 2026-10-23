@@ -95,6 +95,8 @@ dialog::backdrop{background:#12182788}
 dialog h2{font-size:20px;letter-spacing:-.5px;overflow-wrap:anywhere;margin:0 0 12px;line-height:1.4}
 dialog p{font-size:12px;line-height:1.8;color:var(--secondary);margin:0 0 20px;overflow-wrap:anywhere}
 dialog label{margin-top:20px}
+#session-dialog{max-height:calc(100vh - 48px);overflow-y:auto}
+#session-dialog .field-help{font-size:11px;margin:9px 0 0}
 .dialog-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:24px}
 .form-error{color:#bb4a5d;margin:14px 0 0}
 .busy{cursor:progress}

@@ -17,6 +17,13 @@ function notesValue(value) {
   return value;
 }
 
+function timestampValue(value) {
+  if (!Number.isSafeInteger(value) || Math.abs(value) > 8_640_000_000_000_000) {
+    throw new Error('Enter a valid clock-in and clock-out date and time.');
+  }
+  return value;
+}
+
 function openStorage(directory) {
   mkdirSync(directory, { recursive: true });
   const file = path.join(directory, 'time-tracker.sqlite');
@@ -152,6 +159,23 @@ function openStorage(directory) {
           requireRow('time_entries', input.id);
           database.prepare('UPDATE time_entries SET notes = ? WHERE id = ?').run(notesValue(input.notes), input.id);
           break;
+        case 'entry:update': {
+          const entry = requireRow('time_entries', input.id);
+          if (entry.clock_out === null) throw new Error('Stop this timer before editing its time or project.');
+          const originalProject = requireRow('projects', entry.project_id);
+          const project = requireRow('projects', input.projectId);
+          if (project.user_id !== originalProject.user_id) throw new Error('Choose a project belonging to this session\'s user.');
+          const clockIn = timestampValue(input.clockIn);
+          const usesDuration = Object.hasOwn(input, 'durationMs');
+          if (usesDuration && (!Number.isSafeInteger(input.durationMs) || input.durationMs < 0 || Object.hasOwn(input, 'clockOut'))) {
+            throw new Error('Enter a valid non-negative duration without a separate clock-out time.');
+          }
+          const clockOut = timestampValue(usesDuration ? clockIn + input.durationMs : input.clockOut);
+          if (clockOut < clockIn) throw new Error('Clock-out must be at or after clock-in.');
+          database.prepare('UPDATE time_entries SET project_id = ?, clock_in = ?, clock_out = ? WHERE id = ?')
+            .run(project.id, clockIn, clockOut, entry.id);
+          break;
+        }
         case 'entry:delete':
           requireRow('time_entries', input.id);
           // Clock-in and clock-out are a single record and can only be deleted together.
