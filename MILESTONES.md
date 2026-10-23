@@ -1,5 +1,14 @@
 # Time Tracker milestones
 
+## 2026-10-22: version 0.4.3 published for Windows, Mac, and Linux
+
+- Published [Time Tracker 0.4.3](https://github.com/bryancolvinfilm-bot/time-tracker/releases/tag/v0.4.3) as the latest public GitHub Release, with immutable version tag `v0.4.3` pointing to source commit `74efc5c127192ef0cb1a3cf7df00cfefee0ba693`.
+- GitHub Actions [run 39888985142](https://github.com/bryancolvinfilm-bot/time-tracker/actions/runs/39888985142) passed all Windows, Mac, Linux, and publish jobs on that exact source. Each platform passed all 22 source tests. Windows also passed all five packaged desktop tests and its real portable-launch check. Mac passed both bundles' deep/strict signatures, universal binary architecture checks, icon validation/decoding, and all five desktop tests on the DMG's copied app. Linux passed all five desktop tests against each extracted AppImage/DEB application.
+- Published six packages: Windows x64 Setup and portable EXEs; universal Apple Silicon/Intel Mac DMG and ZIP; Linux x64 AppImage and Debian package. `BUILD-INFO.json` records the source, workflow, sizes, hashes, and signing status; `CHECKSUMS.sha256` covers all packages and metadata.
+- The workflow downloaded and verified all eight draft assets before publication, then verified all public downloads anonymously. An independent anonymous download verification on this Windows machine also passed for all eight assets and confirmed the version tag/source commit. Copies are retained under ignored `release/v0.4.3/`.
+- Windows remains unsigned. Mac is ad-hoc signed without Developer ID signing or notarization; Intel binary slices were verified, while runtime desktop testing used the Mac runner's native Apple Silicon architecture. Gatekeeper acceptance and the previously reported M1 launch problem are not established by these tests. Linux checks use extracted apps, not installation on every distro.
+- Application identity, database location, schema, saved records, and running-session behavior remain unchanged. Publishing instructions are in [publish.md](publish.md).
+
 ## 2026-10-22: version 0.4.3 public release preparation
 
 - Adapted Cult Copy's `publish.md` procedure for this Electron project. Added a reusable release guide and a manual workflow that requires the expected source SHA and an explicit publish option.
