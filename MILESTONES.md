@@ -1,5 +1,15 @@
 # Time Tracker milestones
 
+## 2026-10-23: version 0.4.4 published for Windows, Mac, and Linux
+
+- Published [Time Tracker 0.4.4](https://github.com/bryancolvinfilm-bot/time-tracker/releases/tag/v0.4.4) as the latest public GitHub Release. Tag `v0.4.4` points to tested source commit `d3f140ba4f03d0629f219234e77ebe29e10a355e`; the existing 0.4.3 release and tag were preserved.
+- Released stopped-session clock-in/clock-out and duration editing, with duration changes adjusting clock-out, plus project reassignment restricted to the original user's projects. Session IDs and notes are preserved; project and weekly totals update immediately.
+- GitHub Actions [run 39998615964](https://github.com/bryancolvinfilm-bot/time-tracker/actions/runs/39998615964) passed all Windows, Mac, Linux, and publish jobs on that source. Each platform passed all 27 source tests. Windows also passed all seven packaged desktop tests and the real portable-launcher check. Mac passed both bundles' deep/strict signatures, universal architecture checks, icon validation/decoding, and seven desktop tests on the DMG's copied app. Linux passed seven desktop tests against each extracted AppImage/DEB app.
+- Published six packages: Windows x64 installer and portable EXEs, universal Apple Silicon/Intel Mac DMG and ZIP, and Linux x64 AppImage and Debian package. `BUILD-INFO.json` and `CHECKSUMS.sha256` record the exact source, native workflow, sizes, hashes, and signing status.
+- The workflow verified all eight draft uploads before publication and all eight public downloads afterward. Independent anonymous download verification from this Windows machine also passed for every asset, metadata/source SHA, and version tag. Copies and the native build log are retained under ignored `.tools/public-download-v0.4.4/` and `.tools/release-0.4.4-build.log`.
+- Windows remains unsigned. Mac is ad-hoc signed without Developer ID signing or notarization; Intel slices were checked, while runtime testing used the runner's native Apple Silicon architecture. Gatekeeper acceptance and the earlier M1 launch report remain unverified on the reporting machine. Linux testing uses extracted apps rather than installation on every distribution.
+- Application identity, database path, schema version 2, existing records, and running-session recovery remain unchanged. Source and release preparation were committed and pushed; this follow-up records the completed native builds and public verification.
+
 ## 2026-10-23: version 0.4.4 release preparation
 
 - Prepared stopped-session time/duration corrections and owner-scoped project moves for all six platform packages. Updated package/lockfile version, Settings fallback, download links, and release notes to 0.4.4. The existing 0.4.3 release and tag remain intact.
